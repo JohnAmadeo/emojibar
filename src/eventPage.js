@@ -49,7 +49,7 @@ function injectContent(tabId) {
 chromeApis.forEach(api => bluebird.promisifyAll(chrome[api], { promisifier }));
 
 // check if a tab has been updated and inject the content script on this tab if it hasn't been injected with content
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== 'loading' || !tab.url.match(targetUrls.join('|'))) return;
 
   hasContentBeenInjected(tabId)
