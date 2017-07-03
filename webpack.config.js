@@ -4,7 +4,7 @@ module.exports = {
   devtool: 'cheap-module-eval-source-map',
   entry: {
     eventPage: './src/eventPage.js',
-    contentScript: './src/contentScript.js',
+    contentScript: './src/contentScript.jsx',
   },
   output: {
     path: path.join(__dirname, '/dist'),
@@ -16,7 +16,7 @@ module.exports = {
         test: /\.jsx?$/,
         loader: 'babel-loader',
         query: {
-          presets: ['es2017', 'react'],
+          presets: ['es2015', 'react'],
         },
         exclude: /node_modules/,
       },
