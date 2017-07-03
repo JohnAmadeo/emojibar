@@ -3,7 +3,11 @@
   "env": {
     "browser": true
   },
-  "globals":{
+  "globals": {
     "chrome": true
+  },
+  "rules":{
+    "max-len": "off",
+    "no-console":"off"
   }
 }
