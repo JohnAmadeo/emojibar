@@ -1,24 +1,19 @@
-import React, { Component } from 'react';
-import { render } from 'react-dom';
+/* Imports */
+import React from 'react';
+import ReactDOM from 'react-dom';
+import EmojiPicker from './components/EmojiPicker';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { test: 'test' };
-  }
+/* Constants */
+// .fbNubFlyoutFooter covers textbox for pop-up chat boxes
+// the textbox refers to the outermost div wrapping the user's entire text entry area (text, picture/gif/etc. icons, send buttons etc.)
+const textboxSelector = 'div[aria-label="New message"]';
 
-  render() {
-    return (
-      <div>
-        Hi this is a content script
-      </div>
-    );
-  }
-}
+/* Main function */
 
 window.addEventListener('load', () => {
   const app = document.createElement('div');
-  app.className = 'app';
-  document.body.appendChild(app);
-  render(<App />, app);
+  app.className = 'chrome-extension-app';
+  // change appendChild later
+  document.querySelector(textboxSelector).appendChild(app);
+  ReactDOM.render(<EmojiPicker />, app);
 });
