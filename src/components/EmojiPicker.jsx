@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import diff from 'diff';
 
 export default class EmojiPicker extends Component {
   constructor(props) {
@@ -18,8 +19,26 @@ export default class EmojiPicker extends Component {
     this.trackTextEditor();
   }
 
-  getCursor(newText, oldText) {
-   
+/**
+ * gets the position of the cursor following a change in the text editor's contents
+ * @param {*} oldText - the inner text of the text editor before the latest change
+ * @param {*} newText - the inner text of the text editor after the latest change
+ */
+  getCursor(oldText, newText) {
+    const diffOperations = diff.diffChars(oldText, newText);
+
+    // if a block of text has been added, then the cursor is right after the last character in the inserted block of text
+    if (diffOperations.some(operation => operation.added)) {
+      return diffOperations
+        .slice(0, diffOperations.findIndex(operation => operation.added) + 1)
+        .reduce((index, operation) => (operation.removed ? index : index + operation.count), 0);
+    }
+    // if a block of text has been deleted, the cursor is right before the leftmost deleted character
+    else {
+      return diffOperations
+        .slice(0, diffOperations.findIndex(operation => operation.added || operation.removed))
+        .reduce((index, operation) => index + operation.count, 0);
+    }
   }
 
   inEmojiZone(text, cursor) {
@@ -43,10 +62,10 @@ export default class EmojiPicker extends Component {
               isActive: true,
             });
           }
-
           // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
-        } else if (this.state.isActive) {
-          // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive
+        }
+        // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive
+        else if (this.state.isActive) {
           this.setState({
             isActive: false,
           });
