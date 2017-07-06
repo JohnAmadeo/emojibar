@@ -11,6 +11,7 @@ export default class EmojiPicker extends Component {
 
     this.getCursor = this.getCursor.bind(this);
     this.inEmojiZone = this.inEmojiZone.bind(this);
+    this.isWhitespaceCharacter = this.isWhitespaceCharacter.bind(this);
     this.trackTextEditor = this.trackTextEditor.bind(this);
     this.transformEmojiZonesToEmoji = this.transformEmojiZonesToEmoji.bind(this);
   }
@@ -41,8 +42,35 @@ export default class EmojiPicker extends Component {
     }
   }
 
+  /**
+   * check if the cursor is in an emoji zone i.e if it is part of a continuous block of non-whitespace text beginning with a colon
+   * @param {string} text
+   * @param {integer} cursor - current index position of the cursor
+   */
   inEmojiZone(text, cursor) {
+    let seenColon = false;
+    for (let index = cursor - 1; index >= 0; index -= 1) {
+      if (seenColon) {
+        // all whitespace
+        return this.isWhitespaceCharacter(text[index]);
+      }
+      // might have to be all whitespace chars
+      else if (this.isWhitespaceCharacter(text[index])) {
+        return false;
+      }
+      else if (text[index] === ':') {
+        seenColon = true;
+      }
+    }
+    return seenColon;
+  }
 
+  /**
+   * check if string contains a whitespace character (see MDN documentation for String.prototype.trim() for more)
+   * @param {*} string
+   */
+  isWhitespaceCharacter(string) {
+    return string.match(/[\s\uFEFF\xA0]/) !== null;
   }
 
   // Messenger textbox is a draft.js implementation - which sucks since input event doesn't fire in two weird cases, a) first character in the div, b) backspace/delete :(
