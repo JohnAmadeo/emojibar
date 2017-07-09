@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import diff from 'diff';
 
 export default class EmojiPicker extends Component {
   constructor(props) {
@@ -9,16 +8,62 @@ export default class EmojiPicker extends Component {
       isActive: false,
     };
 
-    this.getCursor = this.getCursor.bind(this);
     this.getEmojiZoneText = this.getEmojiZoneText.bind(this);
     this.isWhitespaceCharacter = this.isWhitespaceCharacter.bind(this);
     this.trackTextEditor = this.trackTextEditor.bind(this);
     this.transformEmojiZonesToEmoji = this.transformEmojiZonesToEmoji.bind(this);
     this.updateEmojiPicker = this.updateEmojiPicker.bind(this);
+
+    this.copyPaste = this.copyPaste.bind(this);
+    this.selectAllAndDelete = this.selectAllAndDelete.bind(this);
   }
 
   componentDidMount() {
-    this.trackTextEditor();
+    this.copyPaste();
+    // this.trackTextEditor();
+  }
+
+  selectAllAndDelete() {
+    const textbox = document.querySelector('[contenteditable=true]');
+    textbox.focus();
+
+    const range = document.createRange();
+    range.selectNodeContents(textbox);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    window.setTimeout(() => {
+      document.querySelector('[contenteditable=true]').focus();
+      if (document.execCommand('cut')) {
+        console.log('cut');
+      }
+      else console.log('cut failed');
+    }, 100);
+  }
+
+  copyPaste() {
+    const btn = document.querySelector('.copypaste');
+    btn.addEventListener('click', this.selectAllAndDelete);
+    // btn.addEventListener('click', () => {
+    //   document.querySelector('div[contenteditable=true]').focus();
+    //   try {
+    //     if (document.execCommand('copy')) {
+    //       console.log('copied');
+    //       if (document.execCommand('paste')) {
+    //         console.log('pasted');
+    //       }
+    //       else console.log('failed paste');
+    //     }
+    //     else {
+    //       console.log('failed copy');
+    //     }
+    //   }
+    //   catch (err) {
+    //     console.log('failed copy');
+    //   }
+    // });
   }
 
   /**
@@ -122,7 +167,7 @@ export default class EmojiPicker extends Component {
    * @param {string} text
    */
   transformEmojiZonesToEmoji(text) {
-
+    
   }
 
   /**
@@ -137,6 +182,7 @@ export default class EmojiPicker extends Component {
     return (
       <div className="EmojiPicker">
         {this.state.isActive ? 'active' : 'not active'}
+        <button className="copypaste">Click Here</button>
       </div>
     );
   }
