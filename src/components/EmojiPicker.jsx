@@ -14,56 +14,81 @@ export default class EmojiPicker extends Component {
     this.transformEmojiZonesToEmoji = this.transformEmojiZonesToEmoji.bind(this);
     this.updateEmojiPicker = this.updateEmojiPicker.bind(this);
 
-    this.copyPaste = this.copyPaste.bind(this);
+    this.copyEmoji = this.copyEmoji.bind(this);
     this.selectAllAndDelete = this.selectAllAndDelete.bind(this);
+    this.pasteEmoji = this.pasteEmoji.bind(this);
   }
 
   componentDidMount() {
-    this.copyPaste();
+    this.selectAllAndDelete();
+    this.copyEmoji();
+    this.pasteEmoji();
     // this.trackTextEditor();
   }
 
   selectAllAndDelete() {
-    const textbox = document.querySelector('[contenteditable=true]');
-    textbox.focus();
+    const btn = document.querySelector('.delete');
+    btn.addEventListener('click', () => {
+      const textbox = document.querySelector('[contenteditable=true]');
+      textbox.focus();
 
-    const range = document.createRange();
-    range.selectNodeContents(textbox);
+      const range = document.createRange();
+      range.selectNodeContents(textbox);
 
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
 
-    window.setTimeout(() => {
-      document.querySelector('[contenteditable=true]').focus();
-      if (document.execCommand('cut')) {
-        console.log('cut');
-      }
-      else console.log('cut failed');
-    }, 100);
+      window.setTimeout(() => {
+        document.querySelector('[contenteditable=true]').focus();
+        if (document.execCommand('cut')) {
+          console.log('cut');
+        }
+        else {
+          console.log('cut failed');
+        }
+      }, 100);
+    });
   }
 
-  copyPaste() {
-    const btn = document.querySelector('.copypaste');
-    btn.addEventListener('click', this.selectAllAndDelete);
-    // btn.addEventListener('click', () => {
-    //   document.querySelector('div[contenteditable=true]').focus();
-    //   try {
-    //     if (document.execCommand('copy')) {
-    //       console.log('copied');
-    //       if (document.execCommand('paste')) {
-    //         console.log('pasted');
-    //       }
-    //       else console.log('failed paste');
-    //     }
-    //     else {
-    //       console.log('failed copy');
-    //     }
-    //   }
-    //   catch (err) {
-    //     console.log('failed copy');
-    //   }
-    // });
+  copyEmoji() {
+    const btn = document.querySelector('.copy');
+    btn.addEventListener('click', () => {
+      window.setTimeout(() => {
+        const emojidiv = document.querySelector('div.emoji');
+        emojidiv.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(emojidiv);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        emojidiv.focus();
+        if (document.execCommand('copy')) {
+          console.log('copied');
+        }
+        else {
+          console.log('failed copy');
+        }
+      }, 100);
+    });
+  }
+
+  pasteEmoji() {
+    const btn = document.querySelector('.paste');
+    btn.addEventListener('click', () => {
+      window.setTimeout(() => {
+        const textbox = document.querySelector('div[contenteditable=true]');
+        textbox.focus();
+        if (document.execCommand('paste')) {
+          console.log('pasted');
+        }
+        else {
+          console.log('failed paste');
+        }
+      }, 100);
+    });
   }
 
   /**
@@ -181,8 +206,12 @@ export default class EmojiPicker extends Component {
   render() {
     return (
       <div className="EmojiPicker">
-        {this.state.isActive ? 'active' : 'not active'}
-        <button className="copypaste">Click Here</button>
+        <div>
+          <button className="delete">Delete text in textbox</button>
+          <button className="copy">Copy emoji</button>
+          <button className="paste">Paste text in textbox</button>
+        </div>
+        <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
       </div>
     );
   }
