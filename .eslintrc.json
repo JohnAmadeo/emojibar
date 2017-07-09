@@ -8,7 +8,9 @@
   },
   "rules":{
     "max-len": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+    "no-else-return":"off",
+    "brace-style": "off"
   },
   "parser": "babel-eslint"
 }
