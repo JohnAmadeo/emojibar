@@ -20,6 +20,10 @@ module.exports = {
         },
         exclude: /node_modules/,
       },
+      {
+        test: /\.less$/,
+        loader: 'style!css!less',
+      },
     ],
   },
   resolve: {

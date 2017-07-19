@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import '../less/emoji-picker.less';
 
 export default class EmojiPicker extends Component {
   constructor(props) {
@@ -40,7 +41,7 @@ export default class EmojiPicker extends Component {
   }
 
   componentWillUnmount() {
-    // stop observing DOM mutations
+    // unmount all event listeners
   }
 
   selectAllAndDelete() {
@@ -140,49 +141,41 @@ export default class EmojiPicker extends Component {
    * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
    */
   handleContentChange = (shouldTransformClosedEmojiZone) => {
-    const cursor = document.getSelection().focusOffset;
-    const nodeText = document.getSelection().focusNode.wholeText;
-
-    console.log(document.getSelection());
-
-    // NEED TO CONVERT GET SELECTION TO ASYNC TOO :(
     window.setTimeout(() => {
       const cursor = document.getSelection().focusOffset;
       const nodeText = document.getSelection().focusNode.wholeText;
 
-      console.log(document.getSelection());
-    }, 100);
-
-    // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
-    if (this.isInEmojiZone(nodeText, cursor)) {
-      // console.log('is in emoji zone');
-      if (!this.state.isActive) {
-        this.setState({
-          isActive: true,
-        });
+      // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
+      if (this.isInEmojiZone(nodeText, cursor)) {
+        // console.log('is in emoji zone');
+        if (!this.state.isActive) {
+          this.setState({
+            isActive: true,
+          });
+        }
+        // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
+        const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
+        this.updateEmojiPicker(emojiZoneText);
       }
-      // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
-      const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
-      this.updateEmojiPicker(emojiZoneText);
-    }
-    // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
-    else if (shouldTransformClosedEmojiZone && this.ifAfterClosedEmojiZone(nodeText, cursor)) {
-      // console.log('is after closed emoji zone');
-      if (this.state.isActive) {
+      // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
+      else if (shouldTransformClosedEmojiZone && this.ifAfterClosedEmojiZone(nodeText, cursor)) {
+        // console.log('is after closed emoji zone');
+        if (this.state.isActive) {
+          this.setState({
+            isActive: false,
+          });
+        }
+        this.transformEmojiZoneToEmoji(nodeText, cursor);
+      }
+      // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
+      else if (this.state.isActive) {
+        // console.log('not in emoji zone or after closed emoji zone');
         this.setState({
           isActive: false,
         });
       }
-      this.transformEmojiZoneToEmoji(nodeText, cursor);
-    }
-    // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
-    else if (this.state.isActive) {
-      // console.log('not in emoji zone or after closed emoji zone');
-      this.setState({
-        isActive: false,
-      });
-    }
-    // console.log('huh??');
+      // console.log('huh??');
+    }, 0);
   }
 
   /**
@@ -275,15 +268,15 @@ export default class EmojiPicker extends Component {
 
   render() {
     return (
-      <div className="EmojiPicker">
-        {this.state.isActive ? 'active ' : 'not active '}
-        {this.state.innerText}
+      <div className="emoji-picker">
+        The quick brown fox jumps over the lazy dog near the bank of the river.
+        {/*{this.state.isActive ? 'active ' : 'not active '}
         <div style={{ display: 'none' }}>
           <button className="delete">Delete text in textbox</button>
           <button className="copy">Copy emoji</button>
           <button className="paste">Paste text in textbox</button>
           <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
-        </div>
+        </div>*/}
       </div>
     );
   }
