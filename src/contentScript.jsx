@@ -13,7 +13,6 @@ const textboxSelector = 'div[aria-label="New message"]';
 window.addEventListener('load', () => {
   const app = document.createElement('div');
   app.className = 'chrome-extension-app';
-  // change appendChild later
-  document.querySelector(textboxSelector).appendChild(app);
+  document.querySelector('[aria-label="New message"]').parentNode.previousSibling.appendChild(app);
   ReactDOM.render(<EmojiPicker />, app);
 });
