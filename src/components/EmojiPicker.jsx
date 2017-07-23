@@ -24,89 +24,21 @@ export default class EmojiPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
+      currentlySelectedEmoji: 'grinning-face',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
     };
 
-    this.copyEmoji = this.copyEmoji.bind(this);
-    this.selectAllAndDelete = this.selectAllAndDelete.bind(this);
     this.pasteEmoji = this.pasteEmoji.bind(this);
   }
 
   componentDidMount() {
-    // this.selectAllAndDelete();
-    // this.copyEmoji();
-    // this.pasteEmoji();
     this.trackTextEditor();
   }
 
   componentWillUnmount() {
-    // unmount all event listeners
-  }
-
-  selectAllAndDelete() {
-    const btn = document.querySelector('.delete');
-    btn.addEventListener('click', () => {
-      const textbox = document.querySelector('[contenteditable=true]');
-      textbox.focus();
-
-      const range = document.createRange();
-      range.selectNodeContents(textbox);
-
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-      window.setTimeout(() => {
-        document.querySelector('[contenteditable=true]').focus();
-        if (document.execCommand('cut')) {
-          console.log('cut');
-        }
-        else {
-          console.log('cut failed');
-        }
-      }, 100);
-    });
-  }
-
-  copyEmoji() {
-    const btn = document.querySelector('.copy');
-    btn.addEventListener('click', () => {
-      window.setTimeout(() => {
-        const emojidiv = document.querySelector('div.emoji');
-        emojidiv.focus();
-
-        const range = document.createRange();
-        range.selectNodeContents(emojidiv);
-
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        emojidiv.focus();
-        if (document.execCommand('copy')) {
-          console.log('copied');
-        }
-        else {
-          console.log('failed copy');
-        }
-      }, 100);
-    });
-  }
-
-  pasteEmoji() {
-    const btn = document.querySelector('.paste');
-    btn.addEventListener('click', () => {
-      window.setTimeout(() => {
-        const textbox = document.querySelector('div[contenteditable=true]');
-        textbox.focus();
-        if (document.execCommand('paste')) {
-          console.log('pasted');
-        }
-        else {
-          console.log('failed paste');
-        }
-      }, 100);
-    });
+    // unmount all event listeners, probably observer.disconnect()
   }
 
   /**
@@ -141,40 +73,39 @@ export default class EmojiPicker extends Component {
    * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
    */
   handleContentChange = (shouldTransformClosedEmojiZone) => {
+    // need timeout due to quick arrow key movement
     window.setTimeout(() => {
       const cursor = document.getSelection().focusOffset;
       const nodeText = document.getSelection().focusNode.wholeText;
 
       // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
       if (this.isInEmojiZone(nodeText, cursor)) {
-        // console.log('is in emoji zone');
+        // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
+        const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
+        this.updateEmojiPicker(emojiZoneText);
+
         if (!this.state.isActive) {
           this.setState({
             isActive: true,
           });
         }
-        // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
-        const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
-        this.updateEmojiPicker(emojiZoneText);
       }
       // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
-      else if (shouldTransformClosedEmojiZone && this.ifAfterClosedEmojiZone(nodeText, cursor)) {
-        // console.log('is after closed emoji zone');
+      else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
+        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentlySelectedEmoji);
+
         if (this.state.isActive) {
           this.setState({
             isActive: false,
           });
         }
-        this.transformEmojiZoneToEmoji(nodeText, cursor);
       }
       // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
       else if (this.state.isActive) {
-        // console.log('not in emoji zone or after closed emoji zone');
         this.setState({
           isActive: false,
         });
       }
-      // console.log('huh??');
     }, 0);
   }
 
@@ -183,7 +114,7 @@ export default class EmojiPicker extends Component {
    * @param {string} nodeText - text inside the data-block the cursor is currently in
    * @param {integer} cursor - current index position of the cursor within the data-block it is in
    */
-  ifAfterClosedEmojiZone = (nodeText, cursor) => cursor !== 0 && nodeText[cursor - 1] === ':' && this.isInEmojiZone(nodeText, cursor - 1)
+  isAfterClosedEmojiZone = (nodeText, cursor) => cursor !== 0 && nodeText[cursor - 1] === ':' && this.isInEmojiZone(nodeText, cursor - 1)
 
   /**
    * checks if cursor is inside emoji zone
@@ -215,6 +146,9 @@ export default class EmojiPicker extends Component {
    */
   isWhitespaceCharacter = string => string.match(/[\s\uFEFF\xA0]/) !== null
 
+  /**
+   * track content changes in the text editor and update the emoji picker when necessary
+   */
   trackTextEditor = () => {
     const textEditor = document.querySelector('div[contenteditable=true]');
 
@@ -239,7 +173,6 @@ export default class EmojiPicker extends Component {
     textEditor.addEventListener('keydown', (event) => {
       const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
       if (arrowKeys.includes(event.key)) {
-        console.log('handling content change');
         this.handleContentChange(false);
       }
     });
@@ -251,12 +184,102 @@ export default class EmojiPicker extends Component {
   }
 
   /**
-   * transform all closed emoji zones
-   * @param {string} text
+   * if trigger is ':' or 'enter', pass in currently selected emoji; if 'click', pass in clicked emoji
    */
-  transformEmojiZoneToEmoji = (text) => {
-
+  transformEmojiZoneToEmoji = (nodeText, cursor, emoji) => {
+    this.deleteEmojiZoneText(nodeText, cursor)
+    // this.insertEmoji(emoji);
+      .then((res) => {
+        console.log(res);
+        return this.insertEmoji(emoji);
+      })
+      .then((res) => {
+        console.log(res);
+        return this.pasteEmoji(emoji);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
+
+  /**
+   * delete the emoji zone text the cursor is either positioned in or just after
+   * @param {string} nodeText - text inside the data-block the cursor is currently in
+   * @param {integer} cursor - current index position of the cursor within the data-block it is in
+   */
+  deleteEmojiZoneText = (nodeText, cursor) => {
+    const textbox = document.querySelector('[contenteditable=true]');
+    // textbox.focus();
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+    const textNode = selection.focusNode;
+
+    let startColon;
+
+    // find starting ':' of the emoji zone
+    for (let index = nodeText[cursor - 1] === ':' ? cursor - 2 : cursor - 1; index >= 0; index -= 1) {
+      if (nodeText[index] === ':') {
+        startColon = index;
+        break;
+      }
+    }
+
+    // highlight the emoji zone
+    range.setStart(textNode, startColon);
+    range.setEnd(textNode, cursor);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // cut the emoji zone
+    return new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        document.querySelector('[contenteditable=true]').focus();
+        if (document.execCommand('cut')) {
+          resolve('cut selection succeeded');
+        }
+        else {
+          reject('cut selection failed');
+        }
+      }, 100);
+    });
+  }
+
+  insertEmoji = emoji =>
+    new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        const emojiNode = document.querySelector(`.${emoji}-emoji`);
+        // emojiNode.focus();
+
+        const range = document.createRange();
+        range.selectNodeContents(emojiNode);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        if (document.execCommand('copy')) {
+          resolve('copy to clipboard succeeded');
+        }
+        else {
+          reject('copy to clipboard failed');
+        }
+      }, 100);
+    });
+
+  pasteEmoji = () =>
+    new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        document.querySelector('[contenteditable=true]').focus();
+        if (document.execCommand('paste')) {
+          resolve('paste to clipboard succeeded');
+        }
+        else {
+          reject('paste to clipboard failed');
+        }
+      }, 100);
+    })
 
   /**
    * updates the emojis being shown in the emoji picker depending on which emojis have codes closest to the string in the emoji zone
@@ -268,8 +291,8 @@ export default class EmojiPicker extends Component {
 
   render() {
     return (
-      <div className="emoji-picker">
-        The quick brown fox jumps over the lazy dog near the bank of the river.
+      <div className={`emoji-picker ${!this.state.isActive ? 'emoji-picker--inactive' : ''}`}>
+        <div className="grinning-face-emoji">😀</div>
         {/*{this.state.isActive ? 'active ' : 'not active '}
         <div style={{ display: 'none' }}>
           <button className="delete">Delete text in textbox</button>
@@ -277,6 +300,7 @@ export default class EmojiPicker extends Component {
           <button className="paste">Paste text in textbox</button>
           <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
         </div>*/}
+        <button onClick={this.insertEmoji.bind(this, 'grinning-face')}>Click to Copy</button>
       </div>
     );
   }
