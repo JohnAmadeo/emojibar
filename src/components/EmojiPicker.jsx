@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import $ from 'jquery';
 import '../less/emoji-picker.less';
 
 export default class EmojiPicker extends Component {
@@ -30,11 +31,36 @@ export default class EmojiPicker extends Component {
       isActive: false,
     };
 
-    this.pasteEmoji = this.pasteEmoji.bind(this);
+    this.isCopyingEmoji = false;
   }
 
   componentDidMount() {
     this.trackTextEditor();
+
+    const btn = document.querySelector('.paste');
+    btn.addEventListener('click', () => {
+      window.setTimeout(() => {
+        const textbox = document.querySelector('div[contenteditable=true]');
+        textbox.focus();
+        if (document.execCommand('paste')) {
+          console.log('pasted');
+        }
+        else {
+          console.log('failed paste');
+        }
+      }, 100);
+    });
+
+    document.addEventListener('copy', (e) => {
+      e.clipboardData.setData('text/plain', '😀');
+      e.clipboardData.setData('text/html', '<div>😀</div>');
+      this.isCopyingEmoji = false;
+      e.preventDefault();
+    });
+
+    document.addEventListener('paste', (e) => {
+      console.log(e.clipboardData.getData('text/plain'));
+    });
   }
 
   componentWillUnmount() {
@@ -77,6 +103,7 @@ export default class EmojiPicker extends Component {
     window.setTimeout(() => {
       const cursor = document.getSelection().focusOffset;
       const nodeText = document.getSelection().focusNode.wholeText;
+      const focusNode = document.getSelection().focusNode;
 
       // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
       if (this.isInEmojiZone(nodeText, cursor)) {
@@ -92,7 +119,7 @@ export default class EmojiPicker extends Component {
       }
       // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
       else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
-        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentlySelectedEmoji);
+        this.transformEmojiZoneToEmoji(nodeText, cursor, focusNode, this.state.currentlySelectedEmoji);
 
         if (this.state.isActive) {
           this.setState({
@@ -186,17 +213,21 @@ export default class EmojiPicker extends Component {
   /**
    * if trigger is ':' or 'enter', pass in currently selected emoji; if 'click', pass in clicked emoji
    */
-  transformEmojiZoneToEmoji = (nodeText, cursor, emoji) => {
+  transformEmojiZoneToEmoji = (nodeText, cursor, focusNode, emoji) => {
+    let newCursor;
     this.deleteEmojiZoneText(nodeText, cursor)
     // this.insertEmoji(emoji);
       .then((res) => {
-        console.log(res);
+        newCursor = res.newCursor;
         return this.insertEmoji(emoji);
       })
-      .then((res) => {
-        console.log(res);
-        return this.pasteEmoji(emoji);
-      })
+      // .then((res) => {
+      //   console.log(res);
+      //   return this.pasteEmoji(focusNode, newCursor);
+      // })
+      // .then((res) => {
+      //   console.log(res);
+      // })
       .catch((error) => {
         console.log(error);
       });
@@ -237,7 +268,7 @@ export default class EmojiPicker extends Component {
       window.setTimeout(() => {
         document.querySelector('[contenteditable=true]').focus();
         if (document.execCommand('cut')) {
-          resolve('cut selection succeeded');
+          resolve({ newCursor: startColon });
         }
         else {
           reject('cut selection failed');
@@ -246,40 +277,62 @@ export default class EmojiPicker extends Component {
     });
   }
 
-  insertEmoji = emoji =>
-    new Promise((resolve, reject) => {
-      window.setTimeout(() => {
-        const emojiNode = document.querySelector(`.${emoji}-emoji`);
-        // emojiNode.focus();
+  insertEmoji = (emoji) => {
+    this.isCopyingEmoji = true;
+    document.execCommand('copy');
+    console.log($('.paste').click());
+    return new Promise((resolve, reject) => {
+      resolve(5);
+      // window.setTimeout(() => {
+      //   const emojiNode = document.querySelector(`.${emoji}-emoji`);
+      //   // emojiNode.focus();
 
-        const range = document.createRange();
-        range.selectNodeContents(emojiNode);
+      //   const range = document.createRange();
+      //   range.selectNodeContents(emojiNode);
 
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+      //   const selection = window.getSelection();
+      //   selection.removeAllRanges();
+      //   selection.addRange(range);
 
-        if (document.execCommand('copy')) {
-          resolve('copy to clipboard succeeded');
-        }
-        else {
-          reject('copy to clipboard failed');
-        }
-      }, 100);
+      //   if (document.execCommand('copy')) {
+      //     resolve('copy to clipboard succeeded');
+      //   }
+      //   else {
+      //     reject('copy to clipboard failed');
+      //   }
+      // }, 100);
     });
+  }
 
-  pasteEmoji = () =>
-    new Promise((resolve, reject) => {
+  pasteEmoji = (focusNode, newCursor) => {
+    const selection = document.getSelection();
+    selection.removeAllRanges();
+    return new Promise((resolve, reject) => {
+      // document.querySelector('[contenteditable=true]').focus();
+      // console.log(focusNode);
+
+      // const test = document.getSelection().focusNode;
+
+      // const range = document.createRange();
+      // range.setStart(focusNode, newCursor);
+      // range.setEnd(focusNode, newCursor);
+
+      console.log(this.btn);
+      this.btn.click();
+      // selection.addRange(range);
       window.setTimeout(() => {
-        document.querySelector('[contenteditable=true]').focus();
-        if (document.execCommand('paste')) {
+        const textbox = document.querySelector('div[contenteditable=true]');
+        textbox.focus();
+        console.log(document.execCommand('paste'));
+        if (true) {
           resolve('paste to clipboard succeeded');
         }
         else {
           reject('paste to clipboard failed');
         }
-      }, 100);
-    })
+      }, 1000);
+    });
+  }
 
   /**
    * updates the emojis being shown in the emoji picker depending on which emojis have codes closest to the string in the emoji zone
@@ -289,6 +342,16 @@ export default class EmojiPicker extends Component {
     return emojiZoneText;
   }
 
+  test = () => {
+    console.log('test');
+    window.setTimeout(() => {
+      const textbox = document.querySelector('div[contenteditable=true]');
+      textbox.focus();
+      document.execCommand('paste');
+    }, 100);
+  }
+
+  // try using clipboardData / clipboardEvent like lucidCharts article
   render() {
     return (
       <div className={`emoji-picker ${!this.state.isActive ? 'emoji-picker--inactive' : ''}`}>
@@ -300,7 +363,7 @@ export default class EmojiPicker extends Component {
           <button className="paste">Paste text in textbox</button>
           <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
         </div>*/}
-        <button onClick={this.insertEmoji.bind(this, 'grinning-face')}>Click to Copy</button>
+        <button className="paste" ref={(btn) => { this.btn = btn; }}>Click to Copy</button>
       </div>
     );
   }
