@@ -6,11 +6,12 @@
   "globals": {
     "chrome": true
   },
-  "rules":{
+  "rules": {
     "max-len": "off",
     "class-methods-use-this": "off",
     "no-else-return":"off",
-    "brace-style": "off"
+    "react/sort-comp": "off",
+    "jsx-a11y/accessible-emoji": "off"
   },
   "parser": "babel-eslint"
 }
