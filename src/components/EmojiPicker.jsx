@@ -19,6 +19,7 @@
 
 import React, { Component } from 'react';
 import $ from 'jquery';
+import InformationBar from './InformationBar';
 import '../less/emoji-picker.less';
 
 export default class EmojiPicker extends Component {
@@ -27,6 +28,7 @@ export default class EmojiPicker extends Component {
     this.state = {
       // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
       currentlySelectedEmoji: 'grinning-face',
+      emojiZoneText: ':placeholder',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
     };
@@ -355,6 +357,9 @@ export default class EmojiPicker extends Component {
   render() {
     return (
       <div className={`emoji-picker ${!this.state.isActive ? 'emoji-picker--inactive' : ''}`}>
+        <InformationBar
+          emojiZoneText={this.state.emojiZoneText}
+        />
         <div className="grinning-face-emoji">😀</div>
         {/*{this.state.isActive ? 'active ' : 'not active '}
         <div style={{ display: 'none' }}>
