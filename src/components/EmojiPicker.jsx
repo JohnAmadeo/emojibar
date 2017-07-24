@@ -38,35 +38,67 @@ export default class EmojiPicker extends Component {
 
   componentDidMount() {
     this.trackTextEditor();
-
-    const btn = document.querySelector('.paste');
-    btn.addEventListener('click', () => {
-      window.setTimeout(() => {
-        const textbox = document.querySelector('div[contenteditable=true]');
-        textbox.focus();
-        if (document.execCommand('paste')) {
-          console.log('pasted');
-        }
-        else {
-          console.log('failed paste');
-        }
-      }, 100);
-    });
-
-    document.addEventListener('copy', (e) => {
-      e.clipboardData.setData('text/plain', '😀');
-      e.clipboardData.setData('text/html', '<div>😀</div>');
-      this.isCopyingEmoji = false;
-      e.preventDefault();
-    });
-
-    document.addEventListener('paste', (e) => {
-      console.log(e.clipboardData.getData('text/plain'));
-    });
+    this.initializeClipboardHelperButtons();
   }
 
   componentWillUnmount() {
     // unmount all event listeners, probably observer.disconnect()
+  }
+
+  /**
+   * copy the currently selected emoji to the clipboard
+   */
+  copyEmoji = () => {
+    // the 'isCopyingEmoji' boolean is toggled on to allow the 'copy' event listener to distinguish between user-initiated copy events and the extension's programmatically triggerd copy events; when the latter occurs the currently selected emoji is written to the clipboard to allow emoji insertion via pasting
+    this.isCopyingEmoji = true;
+    return new Promise((resolve) => {
+      // HACK: actual 'copy' is performed inside function triggered when '.copy' button is programmatically clicked; see 'initializeClipboardHelperButtons' functions for explanation; setTimeout required because copy has no effect if synchronously called
+      window.setTimeout(() => {
+        $('.copy').click();
+        // TODO: find way to validate if emoji copy was successful
+        resolve('emoji succesfully copied to clipboard');
+      }, 0);
+    });
+  }
+
+  /**
+   * delete the emoji zone text the cursor is either positioned in or just after
+   * @param {string} nodeText - text inside the data-block the cursor is currently in
+   * @param {integer} cursor - current index position of the cursor within the data-block it is in
+   */
+  deleteEmojiZoneText = (nodeText, cursor) => {
+    const selection = document.getSelection();
+    const range = document.createRange();
+    const focusNode = selection.focusNode;
+
+    let startColon;
+
+    // find starting ':' of the emoji zone
+    for (let index = nodeText[cursor - 1] === ':' ? cursor - 2 : cursor - 1; index >= 0; index -= 1) {
+      if (nodeText[index] === ':') {
+        startColon = index;
+        break;
+      }
+    }
+
+    // highlight the emoji zone
+    range.setStart(focusNode, startColon);
+    range.setEnd(focusNode, cursor);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    return new Promise((resolve, reject) => {
+      // HACK: actual 'cut' is performed inside function triggered when '.cut' button is programmatically clicked; see 'initializeClipboardHelperButtons' functions for explanation; setTimeout required because cut has no effect if synchronously called after highlighting emoji zone
+      window.setTimeout(() => {
+        $('.cut').click();
+        if (document.getSelection().focusNode.wholeText !== nodeText) {
+          resolve('emoji zone text successfully cut from textbox');
+        }
+        else {
+          reject('failed to cut emoji zone text from textbox');
+        }
+      }, 0);
+    });
   }
 
   /**
@@ -105,7 +137,6 @@ export default class EmojiPicker extends Component {
     window.setTimeout(() => {
       const cursor = document.getSelection().focusOffset;
       const nodeText = document.getSelection().focusNode.wholeText;
-      const focusNode = document.getSelection().focusNode;
 
       // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
       if (this.isInEmojiZone(nodeText, cursor)) {
@@ -121,7 +152,7 @@ export default class EmojiPicker extends Component {
       }
       // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
       else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
-        this.transformEmojiZoneToEmoji(nodeText, cursor, focusNode, this.state.currentlySelectedEmoji);
+        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentlySelectedEmoji);
 
         if (this.state.isActive) {
           this.setState({
@@ -136,6 +167,49 @@ export default class EmojiPicker extends Component {
         });
       }
     }, 0);
+  }
+
+  /**
+   * HACK: This implementation is NOT ideal! Read the comment below
+   * Making document.execCommand() calls do not work reliably when triggered upon completion of an emoji zone (e.g ':smile:|'). I haven't figured out the exact cause, particularly when examples on the web (e.g https://developers.google.com/web/updates/2015/04/cut-and-copy-commands) seem to have no problem. Currently, the suspicion is that a) document.execCommand cannot be synchronously called in adjacent lines (calling execCommand('copy') and then execCommand('paste') doesn't produce desired effect), and because (vaguely) b) execCommand calls only works from events that are trusted/triggered by the user (https://w3c.github.io/editing/execCommand.html#dfn-the-copy-command). Button clicks seem to be a 'trusted' event, so the current hack is to initialize three invisible buttons that each perform the cut, copy, and paste commands respectively and to programmatically click them with jQuery in other functions (see the 'transformEmojiZoneToEmoji' function). Again, this is NOT ideal! And should be replaced once a better, more reliable/reasonable solution is found
+   */
+  initializeClipboardHelperButtons = () => {
+    // let btn = document.querySelector('.copy');
+
+    // copy the selected text
+    document.querySelector('.copy').addEventListener('click', () => {
+      document.execCommand('copy');
+    });
+
+    // when a copy event is programmatically triggered to perform emoji insertion, intercept the event and write the appropriate emoji to the clipboard to allow pasting in the future
+    document.addEventListener('copy', (e) => {
+      if (this.isCopyingEmoji) {
+        e.clipboardData.setData('text/plain', '😀');
+        e.clipboardData.setData('text/html', '<span>😀</span>');
+        this.isCopyingEmoji = false;
+        e.preventDefault();
+      }
+    });
+
+    // btn = document.querySelector('.paste');
+
+    // focus on the textbox to ensure the cursor is inside the textbox, and paste the clipboard's contents onto the textbox
+    document.querySelector('.paste').addEventListener('click', () => {
+      document.querySelector('div[contenteditable=true]').focus();
+      document.execCommand('paste');
+    });
+
+    // document.addEventListener('paste', (e) => {
+    //   console.log(e.clipboardData.getData('text/plain'));
+    // });
+
+    // btn = document.querySelector('.cut');
+
+    // focus on the textbox to ensure the desired text is selected, and then cut the selected tex
+    document.querySelector('.cut').addEventListener('click', () => {
+      document.querySelector('[contenteditable=true]').focus();
+      document.execCommand('cut');
+    });
   }
 
   /**
@@ -174,6 +248,23 @@ export default class EmojiPicker extends Component {
    * @param {*} string
    */
   isWhitespaceCharacter = string => string.match(/[\s\uFEFF\xA0]/) !== null
+
+  /**
+   * paste emoji stored in clipboard to the textbox
+   */
+  pasteEmoji = nodeText =>
+    new Promise((resolve, reject) => {
+      // HACK: actual 'paste' is performed inside function triggered when '.paste' button is programmatically clicked; see 'initializeClipboardHelperButtons' functions for explanation; setTimeout required because paste has no effect if synchronously called
+      window.setTimeout(() => {
+        $('.paste').click();
+        if (document.getSelection().focusNode.wholeText !== nodeText) {
+          resolve('emoji successfully pasted in textbox');
+        }
+        else {
+          reject('failed to paste emoji in textbox');
+        }
+      }, 0);
+    });
 
   /**
    * track content changes in the text editor and update the emoji picker when necessary
@@ -215,125 +306,13 @@ export default class EmojiPicker extends Component {
   /**
    * if trigger is ':' or 'enter', pass in currently selected emoji; if 'click', pass in clicked emoji
    */
-  transformEmojiZoneToEmoji = (nodeText, cursor, focusNode, emoji) => {
-    let newCursor;
+  transformEmojiZoneToEmoji = (nodeText, cursor, emoji) => {
     this.deleteEmojiZoneText(nodeText, cursor)
-    // this.insertEmoji(emoji);
-      .then((res) => {
-        newCursor = res.newCursor;
-        return this.insertEmoji(emoji);
-      })
-      // .then((res) => {
-      //   console.log(res);
-      //   return this.pasteEmoji(focusNode, newCursor);
-      // })
-      // .then((res) => {
-      //   console.log(res);
-      // })
+      .then(() => this.copyEmoji(emoji))
+      .then(() => this.pasteEmoji(nodeText))
       .catch((error) => {
         console.log(error);
       });
-  }
-
-  /**
-   * delete the emoji zone text the cursor is either positioned in or just after
-   * @param {string} nodeText - text inside the data-block the cursor is currently in
-   * @param {integer} cursor - current index position of the cursor within the data-block it is in
-   */
-  deleteEmojiZoneText = (nodeText, cursor) => {
-    const textbox = document.querySelector('[contenteditable=true]');
-    // textbox.focus();
-
-    const selection = window.getSelection();
-    const range = document.createRange();
-    const textNode = selection.focusNode;
-
-    let startColon;
-
-    // find starting ':' of the emoji zone
-    for (let index = nodeText[cursor - 1] === ':' ? cursor - 2 : cursor - 1; index >= 0; index -= 1) {
-      if (nodeText[index] === ':') {
-        startColon = index;
-        break;
-      }
-    }
-
-    // highlight the emoji zone
-    range.setStart(textNode, startColon);
-    range.setEnd(textNode, cursor);
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    // cut the emoji zone
-    return new Promise((resolve, reject) => {
-      window.setTimeout(() => {
-        document.querySelector('[contenteditable=true]').focus();
-        if (document.execCommand('cut')) {
-          resolve({ newCursor: startColon });
-        }
-        else {
-          reject('cut selection failed');
-        }
-      }, 100);
-    });
-  }
-
-  insertEmoji = (emoji) => {
-    this.isCopyingEmoji = true;
-    document.execCommand('copy');
-    console.log($('.paste').click());
-    return new Promise((resolve, reject) => {
-      resolve(5);
-      // window.setTimeout(() => {
-      //   const emojiNode = document.querySelector(`.${emoji}-emoji`);
-      //   // emojiNode.focus();
-
-      //   const range = document.createRange();
-      //   range.selectNodeContents(emojiNode);
-
-      //   const selection = window.getSelection();
-      //   selection.removeAllRanges();
-      //   selection.addRange(range);
-
-      //   if (document.execCommand('copy')) {
-      //     resolve('copy to clipboard succeeded');
-      //   }
-      //   else {
-      //     reject('copy to clipboard failed');
-      //   }
-      // }, 100);
-    });
-  }
-
-  pasteEmoji = (focusNode, newCursor) => {
-    const selection = document.getSelection();
-    selection.removeAllRanges();
-    return new Promise((resolve, reject) => {
-      // document.querySelector('[contenteditable=true]').focus();
-      // console.log(focusNode);
-
-      // const test = document.getSelection().focusNode;
-
-      // const range = document.createRange();
-      // range.setStart(focusNode, newCursor);
-      // range.setEnd(focusNode, newCursor);
-
-      console.log(this.btn);
-      this.btn.click();
-      // selection.addRange(range);
-      window.setTimeout(() => {
-        const textbox = document.querySelector('div[contenteditable=true]');
-        textbox.focus();
-        console.log(document.execCommand('paste'));
-        if (true) {
-          resolve('paste to clipboard succeeded');
-        }
-        else {
-          reject('paste to clipboard failed');
-        }
-      }, 1000);
-    });
   }
 
   /**
@@ -344,15 +323,6 @@ export default class EmojiPicker extends Component {
     return emojiZoneText;
   }
 
-  test = () => {
-    console.log('test');
-    window.setTimeout(() => {
-      const textbox = document.querySelector('div[contenteditable=true]');
-      textbox.focus();
-      document.execCommand('paste');
-    }, 100);
-  }
-
   // try using clipboardData / clipboardEvent like lucidCharts article
   render() {
     return (
@@ -360,15 +330,21 @@ export default class EmojiPicker extends Component {
         <InformationBar
           emojiZoneText={this.state.emojiZoneText}
         />
-        <div className="grinning-face-emoji">😀</div>
-        {/*{this.state.isActive ? 'active ' : 'not active '}
-        <div style={{ display: 'none' }}>
-          <button className="delete">Delete text in textbox</button>
-          <button className="copy">Copy emoji</button>
-          <button className="paste">Paste text in textbox</button>
-          <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
-        </div>*/}
-        <button className="paste" ref={(btn) => { this.btn = btn; }}>Click to Copy</button>
+        <div>
+          <div className="grinning-face-emoji">😀</div>
+          {/*{this.state.isActive ? 'active ' : 'not active '}
+          <div style={{ display: 'none' }}>
+            <button className="delete">Delete text in textbox</button>
+            <button className="copy">Copy emoji</button>
+            <button className="paste">Paste text in textbox</button>
+            <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
+          </div>*/}
+          <div className="emoji-picker__clipboard-helpers">
+            <button className="cut">Cut</button>
+            <button className="copy">Copy</button>
+            <button className="paste">Paste</button>
+          </div>
+        </div>
       </div>
     );
   }
