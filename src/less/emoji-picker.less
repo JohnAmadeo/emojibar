@@ -1,6 +1,7 @@
 // define colors 
 @white: #FFF;
 @fb-blue: #0084FF;
+@bg-grey: #F6F7F9;
 
 .emoji-picker {
   background: @white;
@@ -10,7 +11,6 @@
   box-shadow: 0 4px 8px rgba(0,0,0,.12);
   box-sizing: border-box;
   margin-left: -12px;
-  padding: 10px;
   position: absolute;
   user-select: text;
   width: 100%;
@@ -23,4 +23,27 @@
     // visibility: hidden;
   }
 }
+
+.information-bar {
+  background: @bg-grey;
+  border-bottom: 1px solid @fb-blue;
+  border-radius: 6px 6px 0 0;
+  box-sizing: border-box;
+  color: @fb-blue;
+  font-size: 12px;
+  padding: 10px;
+
+  &__keyboard-commands {
+    float: right;
+
+    &__command {
+      margin-left: 24px;
+    }
+
+    @media (max-width: 768px) {
+      &__command {
+        margin-left: 12px;
+      }
+    }
+  }
 }
