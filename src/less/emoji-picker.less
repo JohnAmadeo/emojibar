@@ -24,6 +24,26 @@
   }
 }
 
+.emoji-list {
+  padding: 2px;
+
+  &__wrapper {
+    list-style-type: none;
+  }
+
+  &__emoji {
+    display: inline-block;
+    margin: 4px 6px;
+    padding: 2px 6px;
+
+    &--active {
+      background: @fb-blue;
+      border-radius: 20px;
+      color: @white;
+    }
+  }
+}
+
 .information-bar {
   background: @bg-grey;
   border-bottom: 1px solid @fb-blue;

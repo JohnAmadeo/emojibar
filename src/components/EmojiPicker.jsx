@@ -19,6 +19,7 @@
 
 import React, { Component } from 'react';
 import $ from 'jquery';
+import EmojiList from './EmojiList';
 import InformationBar from './InformationBar';
 import '../less/emoji-picker.less';
 
@@ -27,7 +28,7 @@ export default class EmojiPicker extends Component {
     super(props);
     this.state = {
       // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
-      currentlySelectedEmoji: 'grinning-face',
+      currentlySelectedEmoji: 'grinning_face',
       emojiZoneText: ':placeholder',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
@@ -330,20 +331,13 @@ export default class EmojiPicker extends Component {
         <InformationBar
           emojiZoneText={this.state.emojiZoneText}
         />
-        <div>
-          <div className="grinning-face-emoji">😀</div>
-          {/*{this.state.isActive ? 'active ' : 'not active '}
-          <div style={{ display: 'none' }}>
-            <button className="delete">Delete text in textbox</button>
-            <button className="copy">Copy emoji</button>
-            <button className="paste">Paste text in textbox</button>
-            <div className="emoji" style={{ padding: '20px', 'user-select': 'text' }}>😀</div>
-          </div>*/}
-          <div className="emoji-picker__clipboard-helpers">
-            <button className="cut">Cut</button>
-            <button className="copy">Copy</button>
-            <button className="paste">Paste</button>
-          </div>
+        <EmojiList
+          currentlySelectedEmoji={this.state.currentlySelectedEmoji}
+        />
+        <div className="emoji-picker__clipboard-helpers">
+          <button className="cut">Cut</button>
+          <button className="copy">Copy</button>
+          <button className="paste">Paste</button>
         </div>
       </div>
     );
