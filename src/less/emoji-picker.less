@@ -31,7 +31,32 @@
     list-style-type: none;
   }
 
-  &__emoji {
+  &__header {
+    color: #0084ff;
+    font-size: 12px;
+    font-style: initial;
+    padding: 2px 4px;
+  }
+
+  &__lite-emoji-item {
+    border-radius: 50%;
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: 18px;
+    height: 23px;
+    margin: 4px 6px;
+    padding-top: 1px;
+    text-align: center;
+    width: 23px;
+
+    &--active {
+      background: @fb-blue;
+      border-radius: 50%;
+    }
+  }
+
+  &__full-emoji-item {
+    box-sizing: border-box;
     display: inline-block;
     margin: 4px 6px;
     padding: 2px 6px;
@@ -54,16 +79,8 @@
   padding: 10px;
 
   &__keyboard-commands {
-    float: right;
-
     &__command {
-      margin-left: 24px;
-    }
-
-    @media (max-width: 768px) {
-      &__command {
-        margin-left: 12px;
-      }
+      margin-right: 24px;
     }
   }
 }

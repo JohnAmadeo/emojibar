@@ -328,11 +328,10 @@ export default class EmojiPicker extends Component {
   render() {
     return (
       <div className={`emoji-picker ${!this.state.isActive ? 'emoji-picker--inactive' : ''}`}>
-        <InformationBar
-          emojiZoneText={this.state.emojiZoneText}
-        />
+        <InformationBar />
         <EmojiList
           currentlySelectedEmoji={this.state.currentlySelectedEmoji}
+          emojiZoneText={this.state.emojiZoneText}
         />
         <div className="emoji-picker__clipboard-helpers">
           <button className="cut">Cut</button>

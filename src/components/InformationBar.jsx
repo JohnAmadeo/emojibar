@@ -8,11 +8,10 @@ export default class InformationBar extends Component {
   render() {
     return (
       <div className="information-bar">
-        <span className="information-bar__text-snippet">Emoji matching &quot;<strong>{this.props.emojiZoneText}</strong>&quot;</span>
         <span className="information-bar__keyboard-commands">
-          <span className="information-bar__keyboard-commands__command">↑ ↓ to navigate</span>
-          <span className="information-bar__keyboard-commands__command">↵ to select</span>
-          <span className="information-bar__keyboard-commands__command">esc to dismiss</span>
+          <span className="information-bar__keyboard-commands__command"><strong>tab / shift + tab</strong> to navigate</span>
+          <span className="information-bar__keyboard-commands__command"><strong>enter</strong> to select</span>
+          <span className="information-bar__keyboard-commands__command"><strong>esc</strong> to dismiss</span>
         </span>
       </div>
     );
@@ -20,7 +19,6 @@ export default class InformationBar extends Component {
 }
 
 InformationBar.propTypes = {
-  emojiZoneText: PropTypes.string.isRequired,
 };
 InformationBar.defaultProps = {
 };
