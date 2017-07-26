@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-// import emojis from './emoji.json';
+// import { emojis, popularEmojis } from './emoji.json';
 
 const emojis = [
   {
@@ -16,7 +16,7 @@ const emojis = [
   },
 ];
 
-const popular_emojis = [
+const popularEmojis = [
   {
     name: 'grinning_face',
     unicode: '😀',
@@ -53,20 +53,24 @@ export default class EmojiList extends Component {
   }
 
   render() {
+    // if emoji zone is empty ':|', show most popular emojis; otherwise show emojis that most closely match emoji zone text
     return (
       <div className="emoji-list">
-        <ul className="emoji-list__wrapper">
-          <li className="emoji-list__header">Most popular emojis</li>
-          {popular_emojis.map(emoji => (
-            <li className={`emoji-list__lite-emoji-item ${this.props.currentlySelectedEmoji === emoji.name ? 'emoji-list__lite-emoji-item--active' : ''}`}>{emoji.unicode}</li>
-          ))}
-        </ul>
-        <ul className="emoji-list__wrapper">
-          <li className="emoji-list__header">Emojis matching &quot;<strong>{this.props.emojiZoneText}</strong>&quot;</li>
-          {emojis.map(emoji => (
-            <li className={`emoji-list__full-emoji-item ${this.props.currentlySelectedEmoji === emoji.name ? 'emoji-list__full-emoji-item--active' : ''}`} key={emoji.name}>{emoji.unicode} :{emoji.name}:</li>
-          ))}
-        </ul>
+        {this.props.emojiZoneText === ':' ?
+          <ul className="emoji-list__wrapper">
+            <li className="emoji-list__header">Most popular emojis</li>
+            {popularEmojis.map(emoji =>
+              (<li className={`emoji-list__lite-emoji-item ${this.props.currentlySelectedEmoji === emoji.name ? 'emoji-list__lite-emoji-item--active' : ''}`}>{emoji.unicode}</li>)
+            )}
+          </ul>
+          :
+          <ul className="emoji-list__wrapper">
+            <li className="emoji-list__header">Emojis matching &quot;<strong>{this.props.emojiZoneText}</strong>&quot;</li>
+            {emojis.map(emoji => (
+              <li className={`emoji-list__full-emoji-item ${this.props.currentlySelectedEmoji === emoji.name ? 'emoji-list__full-emoji-item--active' : ''}`} key={emoji.name}>{emoji.unicode} :{emoji.name}:</li>
+            ))}
+          </ul>
+        }
       </div>
     );
   }
@@ -76,6 +80,7 @@ EmojiList.propTypes = {
   currentlySelectedEmoji: PropTypes.string.isRequired,
   emojiZoneText: PropTypes.string.isRequired,
 };
+
 EmojiList.defaultProps = {
 };
 
