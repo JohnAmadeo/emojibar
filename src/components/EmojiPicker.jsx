@@ -313,6 +313,12 @@ export default class EmojiPicker extends Component {
     }
   }
 
+  onHoverOverEmoji = (event) => {
+    this.setState({
+      currentSelectedEmojiIndex: Number(event.target.attributes.getNamedItem('data-index').nodeValue),
+    });
+  }
+
   /**
    * paste emoji stored in clipboard to the textbox
    */
@@ -404,6 +410,7 @@ export default class EmojiPicker extends Component {
         <EmojiList
           currentEmojis={this.state.currentEmojis}
           currentSelectedEmojiIndex={this.state.currentSelectedEmojiIndex}
+          onHoverOverEmoji={this.onHoverOverEmoji}
           shouldShowFullEmojiItem={this.state.emojiZoneText !== ':'}
         />
         <div className="emoji-picker__clipboard-helpers">
