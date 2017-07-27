@@ -19,17 +19,65 @@
 
 import React, { Component } from 'react';
 import $ from 'jquery';
+import select from 'select';
 import EmojiList from './EmojiList';
 import InformationBar from './InformationBar';
 import '../less/emoji-picker.less';
+
+const popularEmojis = [
+  {
+    name: 'grinning_face',
+    unicode: '😀',
+  },
+  {
+    name: 'smirk',
+    unicode: '😏',
+  },
+  {
+    name: 'upside_down_face',
+    unicode: '🙃',
+  },
+];
+
+const emojis = [
+  {
+    name: 'grinning_face',
+    unicode: '😀',
+  },
+  {
+    name: 'smirk',
+    unicode: '😏',
+  },
+  {
+    name: 'upside_down_face',
+    unicode: '🙃',
+  },
+  {
+    name: 'smiling_face_with_halo',
+    unicode: '😇',
+  },
+  {
+    name: 'smiley_cat',
+    unicode: '😺',
+  },
+  {
+    name: 'laughing',
+    unicode: '😂',
+  },
+  {
+    name: 'thinking_face',
+    unicode: '🤔',
+  },
+];
 
 export default class EmojiPicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
       // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
-      currentlySelectedEmoji: 'grinning_face',
-      emojiZoneText: ':placeholder',
+      currentSelectedEmojiIndex: 0,
+      currentEmojis: emojis,
+      emojiZoneText: ':',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
     };
@@ -88,7 +136,7 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    // document.execCommand('insertText', false, this.getEmoji(emojiIndex));    
+    // document.execCommand('insertText', false, this.getEmoji(emojiIndex));
     document.execCommand('insertText', false, '🤔');
 
     // return new Promise((resolve, reject) => {
@@ -137,47 +185,6 @@ export default class EmojiPicker extends Component {
   }
 
   /**
-   * updates the state (active/inactive) of the emoji picker and handles emoji insertion
-   * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
-   */
-  handleContentChange = (shouldTransformClosedEmojiZone) => {
-    // need timeout due to quick arrow key movement
-    window.setTimeout(() => {
-      const cursor = document.getSelection().focusOffset;
-      const nodeText = document.getSelection().focusNode.wholeText;
-
-      // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
-      if (this.isInEmojiZone(nodeText, cursor)) {
-        // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
-        const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
-        this.updateEmojiPicker(emojiZoneText);
-
-        if (!this.state.isActive) {
-          this.setState({
-            isActive: true,
-          });
-        }
-      }
-      // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
-      else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
-        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentlySelectedEmojiIndex);
-
-        if (this.state.isActive) {
-          this.setState({
-            isActive: false,
-          });
-        }
-      }
-      // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
-      else if (this.state.isActive) {
-        this.setState({
-          isActive: false,
-        });
-      }
-    }, 0);
-  }
-
-  /**
    * HACK: This implementation is NOT ideal! Read the comment below
    * Making document.execCommand() calls do not work reliably when triggered upon completion of an emoji zone (e.g ':smile:|'). I haven't figured out the exact cause, particularly when examples on the web (e.g https://developers.google.com/web/updates/2015/04/cut-and-copy-commands) seem to have no problem. Currently, the suspicion is that a) document.execCommand cannot be synchronously called in adjacent lines (calling execCommand('copy') and then execCommand('paste') doesn't produce desired effect), and because (vaguely) b) execCommand calls only works from events that are trusted/triggered by the user (https://w3c.github.io/editing/execCommand.html#dfn-the-copy-command). Button clicks seem to be a 'trusted' event, so the current hack is to initialize three invisible buttons that each perform the cut, copy, and paste commands respectively and to programmatically click them with jQuery in other functions (see the 'transformEmojiZoneToEmoji' function). Again, this is NOT ideal! And should be replaced once a better, more reliable/reasonable solution is found
    */
@@ -190,7 +197,7 @@ export default class EmojiPicker extends Component {
 
     // copy the selected text
     document.querySelector('.copy').addEventListener('click', () => {
-      // const emojiElement = document.querySelector(this.getEmojiClass(this.state.currentlySelectedEmojiIndex));
+      // const emojiElement = document.querySelector(this.getEmojiClass(this.state.currentSelectedEmojiIndex));
       const emojiElement = document.querySelector('span.grinning_face');
       select(emojiElement);
       document.execCommand('copy');
@@ -200,7 +207,7 @@ export default class EmojiPicker extends Component {
     // document.addEventListener('copy', (e) => {
     //   if (this.isCopyingEmoji) {
     //     e.clipboardData.setData('text/plain', '😀');
-    //     // e.clipboardData.setData('text/plain', this.getEmoji(this.state.currentlySelectedEmojiIndex));
+    //     // e.clipboardData.setData('text/plain', this.getEmoji(this.state.currentSelectedEmojiIndex));
     //     e.clipboardData.setData('text/html', '<span>😀</span>');
     //     this.isCopyingEmoji = false;
     //     e.preventDefault();
@@ -253,6 +260,45 @@ export default class EmojiPicker extends Component {
   isWhitespaceCharacter = string => string.match(/[\s\uFEFF\xA0]/) !== null
 
   /**
+ * updates the state (active/inactive) of the emoji picker and handles emoji insertion
+ * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
+ */
+  onContentChange = (shouldTransformClosedEmojiZone) => {
+    // need timeout due to quick arrow key movement
+    window.setTimeout(() => {
+      const cursor = document.getSelection().focusOffset;
+      const nodeText = document.getSelection().focusNode.wholeText;
+
+      // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
+      if (this.isInEmojiZone(nodeText, cursor)) {
+        // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
+        const emojiZoneText = this.getEmojiZoneText(nodeText, cursor);
+        this.updateEmojiPicker(emojiZoneText);
+
+        if (!this.state.isActive) {
+          this.setState({
+            isActive: true,
+          });
+        }
+      }
+      // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
+      else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
+        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentSelectedEmojiIndex);
+
+        if (this.state.isActive) {
+          this.setState({
+            isActive: false,
+          });
+        }
+      }
+      // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
+      else if (this.state.isActive) {
+        this.setState({
+          isActive: false,
+        });
+      }
+    }, 0);
+  }
 
   onEmojiPickerNavigation = (isShiftKeyPressed) => {
     const currentIndex = this.state.currentSelectedEmojiIndex;
@@ -295,7 +341,7 @@ export default class EmojiPicker extends Component {
     const observer = new MutationObserver((mutationRecords) => {
       const newInnerText = mutationRecords[mutationRecords.length - 1].target.textContent;
       if (newInnerText !== this.state.innerText) {
-        this.handleContentChange(true);
+        this.onContentChange(true);
         this.setState({
           innerText: newInnerText,
         });
@@ -312,7 +358,7 @@ export default class EmojiPicker extends Component {
       // handle arrow key navigation
       const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
       if (arrowKeys.includes(event.key)) {
-        this.handleContentChange(false);
+        this.onContentChange(false);
       }
       // handle emoji picker navigation
       if (event.key === 'Tab') {
@@ -323,7 +369,7 @@ export default class EmojiPicker extends Component {
 
     // handle click navigation
     textEditor.addEventListener('click', () => {
-      this.handleContentChange(false);
+      this.onContentChange(false);
     });
   }
 
@@ -352,10 +398,13 @@ export default class EmojiPicker extends Component {
   render() {
     return (
       <div className={`emoji-picker ${!this.state.isActive ? 'emoji-picker--inactive' : ''}`}>
-        <InformationBar />
-        <EmojiList
-          currentlySelectedEmoji={this.state.currentlySelectedEmoji}
+        <InformationBar
           emojiZoneText={this.state.emojiZoneText}
+        />
+        <EmojiList
+          currentEmojis={this.state.currentEmojis}
+          currentSelectedEmojiIndex={this.state.currentSelectedEmojiIndex}
+          shouldShowFullEmojiItem={this.state.emojiZoneText !== ':'}
         />
         <div className="emoji-picker__clipboard-helpers">
           <button className="cut">Cut</button>
