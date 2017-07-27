@@ -253,6 +253,21 @@ export default class EmojiPicker extends Component {
   isWhitespaceCharacter = string => string.match(/[\s\uFEFF\xA0]/) !== null
 
   /**
+
+  onEmojiPickerNavigation = (isShiftKeyPressed) => {
+    const currentIndex = this.state.currentSelectedEmojiIndex;
+    if (isShiftKeyPressed) {
+      this.setState({
+        currentSelectedEmojiIndex: currentIndex !== 0 ? currentIndex - 1 : this.state.currentEmojis.length - 1,
+      });
+    } else {
+      this.setState({
+        currentSelectedEmojiIndex: currentIndex < this.state.currentEmojis.length - 1 ? currentIndex + 1 : 0,
+      });
+    }
+  }
+
+  /**
    * paste emoji stored in clipboard to the textbox
    */
   pasteEmoji = (nodeText) => {
@@ -293,11 +308,16 @@ export default class EmojiPicker extends Component {
     };
     observer.observe(textEditor, configurations);
 
-    // handle arrow key navigation
     textEditor.addEventListener('keydown', (event) => {
+      // handle arrow key navigation
       const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
       if (arrowKeys.includes(event.key)) {
         this.handleContentChange(false);
+      }
+      // handle emoji picker navigation
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        this.onEmojiPickerNavigation(event.shiftKey);
       }
     });
 
