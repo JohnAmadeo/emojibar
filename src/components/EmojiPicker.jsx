@@ -86,7 +86,7 @@ export default class EmojiPicker extends Component {
   }
 
   componentDidMount() {
-    this.trackTextEditor();
+    this.trackEvents();
   }
 
   componentWillUnmount() {
@@ -181,7 +181,7 @@ export default class EmojiPicker extends Component {
       }
       // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
       else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
-        this.transformEmojiZoneToEmoji(nodeText, cursor, this.state.currentSelectedEmojiIndex);
+        this.transformEmojiZoneToEmoji(nodeText, cursor);
 
         if (this.state.isActive) {
           this.setState({
@@ -198,7 +198,13 @@ export default class EmojiPicker extends Component {
     }, 0);
   }
 
-  onEmojiPickerNavigation = (isShiftKeyPressed) => {
+  onHoverOverEmoji = (event) => {
+    this.setState({
+      currentSelectedEmojiIndex: Number(event.target.attributes.getNamedItem('data-index').nodeValue),
+    });
+  }
+
+  onNavigationWithTab = (isShiftKeyPressed) => {
     const currentIndex = this.state.currentSelectedEmojiIndex;
     if (isShiftKeyPressed) {
       this.setState({
@@ -211,16 +217,20 @@ export default class EmojiPicker extends Component {
     }
   }
 
-  onHoverOverEmoji = (event) => {
+  onSelectionWithEnter = () => {
+    const cursor = document.getSelection().focusOffset;
+    const nodeText = document.getSelection().focusNode.wholeText;
+    this.transformEmojiZoneToEmoji(nodeText, cursor);
+
     this.setState({
-      currentSelectedEmojiIndex: Number(event.target.attributes.getNamedItem('data-index').nodeValue),
+      isActive: false,
     });
   }
 
   /**
-   * track content changes in the text editor and update the emoji picker when necessary
+   * track text editor and emoji picker
    */
-  trackTextEditor = () => {
+  trackEvents = () => {
     const textEditor = document.querySelector('div[contenteditable=true]');
 
     // handle all insertion and deletion by listening to DOM mutations to text editor div
@@ -247,9 +257,15 @@ export default class EmojiPicker extends Component {
         this.onContentChange(false);
       }
       // handle emoji picker navigation
-      if (event.key === 'Tab') {
+      if (event.key === 'Tab' && this.state.isActive) {
         event.preventDefault();
-        this.onEmojiPickerNavigation(event.shiftKey);
+        this.onNavigationWithTab(event.shiftKey);
+      }
+      // handle emoji picker selection
+      if (event.key === 'Enter' && this.state.isActive) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.onSelectionWithEnter();
       }
     });
 
@@ -262,7 +278,7 @@ export default class EmojiPicker extends Component {
   /**
    * Might be able to collapse all of this into one function!!!
    */
-  transformEmojiZoneToEmoji = (nodeText, cursor, emojiIndex) => {
+  transformEmojiZoneToEmoji = (nodeText, cursor) => {
     const selection = document.getSelection();
     const range = document.createRange();
     const focusNode = selection.focusNode;
@@ -283,8 +299,8 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    // document.execCommand('insertText', false, this.getEmoji(emojiIndex));
-    document.execCommand('insertText', false, '🤔');
+    // document.execCommand('insertText', false, this.getEmoji(this.state.currentlySelectedEmojiIndex));
+    document.execCommand('insertText', false, '😀');
   }
 
   /**
