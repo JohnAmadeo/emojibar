@@ -18,8 +18,6 @@
  */
 
 import React, { Component } from 'react';
-import $ from 'jquery';
-import select from 'select';
 import EmojiList from './EmojiList';
 import InformationBar from './InformationBar';
 import '../less/emoji-picker.less';
@@ -77,12 +75,12 @@ export default class EmojiPicker extends Component {
       // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
       currentSelectedEmojiIndex: 0,
       currentEmojis: emojis,
+      cursor: 0,
       emojiZoneText: ':',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
+      nodeText: null,
     };
-
-    this.isCopyingEmoji = false;
   }
 
   componentDidMount() {
@@ -195,6 +193,11 @@ export default class EmojiPicker extends Component {
           isActive: false,
         });
       }
+
+      this.setState({
+        cursor,
+        nodeText,
+      });
     }, 0);
   }
 
@@ -217,10 +220,9 @@ export default class EmojiPicker extends Component {
     }
   }
 
-  onSelectionWithEnter = () => {
-    const cursor = document.getSelection().focusOffset;
-    const nodeText = document.getSelection().focusNode.wholeText;
-    this.transformEmojiZoneToEmoji(nodeText, cursor);
+  onEmojiSelection = () => {
+    document.querySelector('div[contenteditable=true]').focus();
+    this.transformEmojiZoneToEmoji(this.state.nodeText, this.state.cursor);
 
     this.setState({
       isActive: false,
@@ -265,7 +267,8 @@ export default class EmojiPicker extends Component {
       if (event.key === 'Enter' && this.state.isActive) {
         event.preventDefault();
         event.stopPropagation();
-        this.onSelectionWithEnter();
+
+        this.onEmojiSelection();
       }
     });
 
@@ -321,6 +324,7 @@ export default class EmojiPicker extends Component {
         <EmojiList
           currentEmojis={this.state.currentEmojis}
           currentSelectedEmojiIndex={this.state.currentSelectedEmojiIndex}
+          onEmojiSelection={this.onEmojiSelection}
           onHoverOverEmoji={this.onHoverOverEmoji}
           shouldShowFullEmojiItem={this.state.emojiZoneText !== ':'}
         />

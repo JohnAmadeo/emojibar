@@ -4,6 +4,19 @@ import React, { Component, PropTypes } from 'react';
 export default class EmojiList extends Component {
   constructor(props) {
     super(props);
+
+    this.emojiItems = [];
+  }
+
+  componentDidUpdate() {
+    // attach event listeners to emoji items to perform emoji insertion on click
+    this.emojiItems.forEach((emojiItem) => {
+      emojiItem.removeEventListener('click', this.props.onEmojiSelection);
+    });
+    this.emojiItems = document.querySelector('.emoji-list__wrapper').childNodes;
+    this.emojiItems.forEach((emojiItem) => {
+      emojiItem.addEventListener('click', this.props.onEmojiSelection);
+    });
   }
 
   isEmojiItemActive = index => this.props.currentSelectedEmojiIndex === index
@@ -11,7 +24,7 @@ export default class EmojiList extends Component {
   render() {
     // if emoji zone is empty, show most popular emojis; otherwise show emojis that most closely match emoji zone text
     return (
-      <div className="emoji-list">show
+      <div className="emoji-list">
         <ul className="emoji-list__wrapper">
           {this.props.currentEmojis.map((emoji, index) => (this.props.shouldShowFullEmojiItem ?
             <li
@@ -46,6 +59,7 @@ EmojiList.propTypes = {
     }),
   ).isRequired,
   currentSelectedEmojiIndex: PropTypes.number.isRequired,
+  onEmojiSelection: PropTypes.func.isRequired,
   onHoverOverEmoji: PropTypes.func.isRequired,
   shouldShowFullEmojiItem: PropTypes.bool.isRequired,
 };
