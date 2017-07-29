@@ -156,9 +156,9 @@ export default class EmojiPicker extends Component {
   isWhitespaceCharacter = string => string.match(/[\s\uFEFF\xA0]/) !== null
 
   /**
- * updates the state (active/inactive) of the emoji picker and handles emoji insertion
- * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
- */
+   * updates the state (active/inactive) of the emoji picker and handles emoji insertion
+   * @param {boolean} shouldTransformClosedEmojiZone - indicates whether a closed emoji zone should be transformed into emoji if the cursor is right after the closed emoji zone
+   */
   onContentChange = (shouldTransformClosedEmojiZone) => {
     // need timeout due to quick arrow key movement
     window.setTimeout(() => {
@@ -179,7 +179,7 @@ export default class EmojiPicker extends Component {
       }
       // if cursor is right after closed emoji zone, remove emoji zone text, insert emoji, and deactivate emoji picker (e.g ' :sweat_smile:|')
       else if (shouldTransformClosedEmojiZone && this.isAfterClosedEmojiZone(nodeText, cursor)) {
-        this.transformEmojiZoneToEmoji(nodeText, cursor);
+        this.transformEmojiZoneToEmoji(nodeText, cursor, true);
 
         if (this.state.isActive) {
           this.setState({
@@ -222,7 +222,7 @@ export default class EmojiPicker extends Component {
 
   onEmojiSelection = () => {
     document.querySelector('div[contenteditable=true]').focus();
-    this.transformEmojiZoneToEmoji(this.state.nodeText, this.state.cursor);
+    this.transformEmojiZoneToEmoji(this.state.nodeText, this.state.cursor, false);
 
     this.setState({
       isActive: false,
@@ -281,7 +281,7 @@ export default class EmojiPicker extends Component {
   /**
    * Might be able to collapse all of this into one function!!!
    */
-  transformEmojiZoneToEmoji = (nodeText, cursor) => {
+  transformEmojiZoneToEmoji = (nodeText, cursor, isAfterClosedEmojiZone) => {
     const selection = document.getSelection();
     const range = document.createRange();
     const focusNode = selection.focusNode;
@@ -289,7 +289,7 @@ export default class EmojiPicker extends Component {
     let startColon;
 
     // find starting ':' of the emoji zone
-    for (let index = nodeText[cursor - 1] === ':' ? cursor - 2 : cursor - 1; index >= 0; index -= 1) {
+    for (let index = isAfterClosedEmojiZone ? cursor - 2 : cursor - 1; index >= 0; index -= 1) {
       if (nodeText[index] === ':') {
         startColon = index;
         break;
