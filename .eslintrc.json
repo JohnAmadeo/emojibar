@@ -11,7 +11,8 @@
     "class-methods-use-this": "off",
     "no-else-return":"off",
     "react/sort-comp": "off",
-    "jsx-a11y/accessible-emoji": "off"
+    "jsx-a11y/accessible-emoji": "off",
+    "brace-style": "off"
   },
   "parser": "babel-eslint"
 }

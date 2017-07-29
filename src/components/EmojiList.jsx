@@ -31,6 +31,7 @@ export default class EmojiList extends Component {
               className={`emoji-list__full-emoji-item ${this.isEmojiItemActive(index) ? 'emoji-list__full-emoji-item--active' : ''}`}
               key={emoji.name}
               data-index={index}
+              data-name={emoji.name}
               onMouseOver={this.props.onHoverOverEmoji}
             >
               {emoji.unicode} :{emoji.name}:
@@ -40,6 +41,7 @@ export default class EmojiList extends Component {
               className={`emoji-list__lite-emoji-item ${this.isEmojiItemActive(index) ? 'emoji-list__lite-emoji-item--active' : ''}`}
               key={emoji.name}
               data-index={index}
+              data-name={emoji.name}
               onMouseOver={this.props.onHoverOverEmoji}
             >
               {emoji.unicode}

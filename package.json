@@ -43,9 +43,9 @@
   "dependencies": {
     "arrive": "^2.4.1",
     "bluebird": "^3.5.0",
-    "diff": "^3.2.0",
     "jquery": "^3.2.1",
     "react": "^0.14.7",
-    "react-dom": "^0.14.7"
+    "react-dom": "^0.14.7",
+    "select": "^1.1.2"
   }
 }

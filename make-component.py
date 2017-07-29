@@ -11,7 +11,7 @@ else:
       file = open('./src/components/' + component_name + '.jsx', 'w+')
 
       file.write(
-"""import React, { Component } from 'react';
+"""import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 
 export default class %s extends Component {
