@@ -22,11 +22,11 @@ module.exports = {
       },
       {
         test: /\.less$/,
-        loader: 'style!css!less',
+        loader: 'style-loader!css-loader!less-loader',
       },
     ],
   },
   resolve: {
-    extensions: ['', '.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.json'],
   },
 };
