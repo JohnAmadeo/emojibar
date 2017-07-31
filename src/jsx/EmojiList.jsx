@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 // import { emojis, popularEmojis } from './emoji.json';
+// import emoji from '../emoji.js';
 
 export default class EmojiList extends Component {
   constructor(props) {
@@ -13,10 +14,14 @@ export default class EmojiList extends Component {
     this.emojiItems.forEach((emojiItem) => {
       emojiItem.removeEventListener('click', this.props.onEmojiSelection);
     });
-    this.emojiItems = document.querySelector('.emoji-list__wrapper').childNodes;
+
+    // if (this.emojiList !== null) {
+    this.emojiItems = this.emojiList.childNodes;
     this.emojiItems.forEach((emojiItem) => {
       emojiItem.addEventListener('click', this.props.onEmojiSelection);
     });
+    // }
+    // else { console.log(prevProps); }
   }
 
   isEmojiItemActive = index => this.props.currentSelectedEmojiIndex === index
@@ -25,7 +30,7 @@ export default class EmojiList extends Component {
     // if emoji zone is empty, show most popular emojis; otherwise show emojis that most closely match emoji zone text
     return (
       <div className="emoji-list">
-        <ul className="emoji-list__wrapper">
+        <ul className="emoji-list__wrapper" ref={(node) => { this.emojiList = node; }}>
           {this.props.currentEmojis.map((emoji, index) => (this.props.shouldShowFullEmojiItem ?
             <li
               className={`emoji-list__full-emoji-item ${this.isEmojiItemActive(index) ? 'emoji-list__full-emoji-item--active' : ''}`}
@@ -34,7 +39,7 @@ export default class EmojiList extends Component {
               data-name={emoji.name}
               onMouseOver={this.props.onHoverOverEmoji}
             >
-              {emoji.unicode} :{emoji.name}:
+              {emoji.char} :{emoji.name}:
             </li>
             :
             <li
@@ -44,7 +49,7 @@ export default class EmojiList extends Component {
               data-name={emoji.name}
               onMouseOver={this.props.onHoverOverEmoji}
             >
-              {emoji.unicode}
+              {emoji.char}
             </li>
           ))}
         </ul>
@@ -57,7 +62,7 @@ EmojiList.propTypes = {
   currentEmojis: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
-      unicode: PropTypes.string.isRequired,
+      char: PropTypes.string.isRequired,
     }),
   ).isRequired,
   currentSelectedEmojiIndex: PropTypes.number.isRequired,
