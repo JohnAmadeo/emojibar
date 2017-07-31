@@ -12,7 +12,8 @@
     "no-else-return":"off",
     "react/sort-comp": "off",
     "jsx-a11y/accessible-emoji": "off",
-    "brace-style": "off"
+    "brace-style": "off",
+    "import/extensions": "off"
   },
   "parser": "babel-eslint"
 }

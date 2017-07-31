@@ -1,5 +1,5 @@
 /* Imports */
-const bluebird = require('bluebird');
+import bluebird from 'bluebird';
 
 /* Constants */
 const targetUrls = ['https?://www.messenger.com'];
