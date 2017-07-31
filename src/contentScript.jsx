@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'arrive';
-import EmojiPicker from './components/EmojiPicker';
+import EmojiPicker from './jsx/EmojiPicker.jsx';
 
 /* Constants */
 // .fbNubFlyoutFooter covers textbox for pop-up chat boxes

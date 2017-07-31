@@ -1,72 +1,8 @@
-/* Project Terminology & Concepts
- *
- * emoji zone - i.e a continuous block of non-whitespace text started by a colon preceded with a whitespace and ended with a colon e.g ' :smile:'
- * draft.js   - FB's (open source) rich text editor library
- * e.g of structure
- * <div data-contents=true>
- *    <div data-block=true>
- *      <div data-text=true>
- *        text
- *      </div>
- *    </div>
- *    <div data-block=true>
- *      <div data-text=true>
- *        text
- *      </div>
- *    </div>
- *  </div>
- */
-
 import React, { Component } from 'react';
-import EmojiList from './EmojiList';
-import InformationBar from './InformationBar';
+import EmojiList from './EmojiList.jsx';
+import InformationBar from './InformationBar.jsx';
+import { emojis, popularEmojis } from '../emoji.js';
 import '../less/emoji-picker.less';
-
-const popularEmojis = [
-  {
-    name: 'grinning_face',
-    unicode: '😀',
-  },
-  {
-    name: 'smirk',
-    unicode: '😏',
-  },
-  {
-    name: 'upside_down_face',
-    unicode: '🙃',
-  },
-];
-
-const emojis = [
-  {
-    name: 'grinning_face',
-    unicode: '😀',
-  },
-  {
-    name: 'smirk',
-    unicode: '😏',
-  },
-  {
-    name: 'upside_down_face',
-    unicode: '🙃',
-  },
-  {
-    name: 'smiling_face_with_halo',
-    unicode: '😇',
-  },
-  {
-    name: 'smiley_cat',
-    unicode: '😺',
-  },
-  {
-    name: 'laughing',
-    unicode: '😂',
-  },
-  {
-    name: 'thinking_face',
-    unicode: '🤔',
-  },
-];
 
 export default class EmojiPicker extends Component {
   constructor(props) {
@@ -74,7 +10,7 @@ export default class EmojiPicker extends Component {
     this.state = {
       // PLACEHOLDER VALUE; currently selected emoji should be null at initialization
       currentSelectedEmojiIndex: 0,
-      currentEmojis: emojis,
+      currentEmojis: popularEmojis,
       cursor: 0,
       emojiZoneText: ':',
       innerText: '', // what's the point of keeping the inner text?
@@ -190,6 +126,7 @@ export default class EmojiPicker extends Component {
       // if cursor is not in an emoji zone and emoji picker was previously active, make emoji picker inactive (e.g from ' :|' to ' |:' with left arrow key, from ' :smi|' to ' :smi |' with spacebar, from ' :|' to ' backspace)
       else if (this.state.isActive) {
         this.setState({
+          currentSelectedEmojiIndex: 0,
           isActive: false,
         });
       }
