@@ -8,7 +8,7 @@ else:
     component_names = sys.argv[1:]
 
     for component_name in component_names:
-      file = open('./src/components/' + component_name + '.jsx', 'w+')
+      file = open('./src/jsx/' + component_name + '.jsx', 'w+')
 
       file.write(
 """import React, { Component, PropTypes } from 'react';
