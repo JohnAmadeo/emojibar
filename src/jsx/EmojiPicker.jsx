@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import EmojiList from './EmojiList.jsx';
 import InformationBar from './InformationBar.jsx';
-import { emojis, popularEmojis } from '../emoji.js';
+import { popularEmojis, emojiSearchEngine } from '../emoji.js';
 import '../less/emoji-picker.less';
 
 export default class EmojiPicker extends Component {
@@ -12,7 +12,7 @@ export default class EmojiPicker extends Component {
       currentSelectedEmojiIndex: 0,
       currentEmojis: popularEmojis,
       cursor: 0,
-      emojiZoneText: ':',
+      emojiZoneText: '',
       innerText: '', // what's the point of keeping the inner text?
       isActive: false,
       nodeText: null,
@@ -239,8 +239,7 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    // document.execCommand('insertText', false, this.getEmoji(this.state.currentlySelectedEmojiIndex));
-    document.execCommand('insertText', false, '😀');
+    document.execCommand('insertText', false, this.state.currentEmojis[this.state.currentSelectedEmojiIndex].char);
   }
 
   /**
@@ -248,7 +247,20 @@ export default class EmojiPicker extends Component {
    * @param {string} emojiZoneText - text in the emoji zone; may or may not match the code for an emoji
    */
   updateEmojiPicker(emojiZoneText) {
-    return emojiZoneText;
+    if (emojiZoneText === '') {
+      this.setState({
+        currentEmojis: popularEmojis,
+        currentSelectedEmojiIndex: 0,
+        emojiZoneText,
+      });
+    }
+    else {
+      this.setState({
+        currentEmojis: emojiSearchEngine.search(emojiZoneText).slice(0, 20),
+        currentSelectedEmojiIndex: 0,
+        emojiZoneText,
+      });
+    }
   }
 
   // try using clipboardData / clipboardEvent like lucidCharts article
@@ -263,7 +275,7 @@ export default class EmojiPicker extends Component {
           currentSelectedEmojiIndex={this.state.currentSelectedEmojiIndex}
           onEmojiSelection={this.onEmojiSelection}
           onHoverOverEmoji={this.onHoverOverEmoji}
-          shouldShowFullEmojiItem={this.state.emojiZoneText !== ':'}
+          shouldShowFullEmojiItem={this.state.emojiZoneText !== ''}
         />
       </div>
     );

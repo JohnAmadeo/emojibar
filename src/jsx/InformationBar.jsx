@@ -9,7 +9,7 @@ export default class InformationBar extends Component {
     return (
       <div className="information-bar">
         <span>
-          {this.props.emojiZoneText === ':' ?
+          {this.props.emojiZoneText === '' ?
             <span className="information-bar__snippet">Most popular emojis</span>
             :
             <span className="information-bar__snippet">Emojis matching &quot;<strong>{this.props.emojiZoneText}</strong>&quot;</span>
