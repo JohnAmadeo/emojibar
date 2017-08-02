@@ -2,7 +2,7 @@
 import bluebird from 'bluebird';
 
 /* Constants */
-const targetUrls = ['https?://www.messenger.com'];
+const targetUrls = ['https?://www.messenger.com', 'https?://www.facebook.com/messages'];
 // revisit this (and manifest.json) later to see which APIs are actually needed
 const chromeApis = ['tabs', 'windows', 'contextMenus'];
 
