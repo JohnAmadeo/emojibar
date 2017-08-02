@@ -8,7 +8,7 @@ const supportedEmojiNames = ['ghost', 'brazil', 'green_apple', 'necktie', 'tulip
 // Options for fuzzy searching using fuse.js library
 const searchOptions = {
   distance: 20,
-  keys: [{ name: 'name', weight: 0.7 }, { name: 'keywords', weight: 0.3 }],
+  keys: [{ name: 'name', weight: 0.85 }, { name: 'keywords', weight: 0.15 }],
   location: 0,
   maxPatternLength: 32,
   minMatchCharLength: 1,

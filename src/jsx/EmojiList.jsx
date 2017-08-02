@@ -15,13 +15,10 @@ export default class EmojiList extends Component {
       emojiItem.removeEventListener('click', this.props.onEmojiSelection);
     });
 
-    // if (this.emojiList !== null) {
     this.emojiItems = this.emojiList.childNodes;
     this.emojiItems.forEach((emojiItem) => {
       emojiItem.addEventListener('click', this.props.onEmojiSelection);
     });
-    // }
-    // else { console.log(prevProps); }
   }
 
   isEmojiItemActive = index => this.props.currentSelectedEmojiIndex === index
