@@ -140,7 +140,7 @@ export default class EmojiPicker extends Component {
 
   onHoverOverEmoji = (event) => {
     this.setState({
-      currentSelectedEmojiIndex: Number(event.target.attributes.getNamedItem('data-index').nodeValue),
+      currentSelectedEmojiIndex: Number(event.currentTarget.attributes.getNamedItem('data-index').nodeValue),
     });
   }
 
@@ -215,10 +215,23 @@ export default class EmojiPicker extends Component {
     });
   }
 
-  /**
-   * Might be able to collapse all of this into one function!!!
-   */
   transformEmojiZoneToEmoji = (nodeText, cursor, isAfterClosedEmojiZone) => {
+    let emojiToInsert;
+    if (isAfterClosedEmojiZone) {
+      for (let index = 0; index < this.state.currentEmojis.length; index += 1) {
+        if (this.state.currentEmojis[index].name === this.state.emojiZoneText) {
+          emojiToInsert = this.state.currentEmojis[index].char;
+          break;
+        }
+      }
+
+      if (emojiToInsert == null) {
+        return;
+      }
+    } else {
+      emojiToInsert = this.state.currentEmojis[this.state.currentSelectedEmojiIndex].char;
+    }
+
     const selection = document.getSelection();
     const range = document.createRange();
     const focusNode = selection.focusNode;
@@ -239,7 +252,7 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    document.execCommand('insertText', false, this.state.currentEmojis[this.state.currentSelectedEmojiIndex].char);
+    document.execCommand('insertText', false, emojiToInsert);
   }
 
   /**
