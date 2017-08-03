@@ -24,7 +24,11 @@ export default class EmojiPicker extends Component {
   }
 
   componentWillUnmount() {
-    // unmount all event listeners, probably observer.disconnect()
+    this.observer.disconnect();
+
+    const textEditor = document.querySelector('div[contenteditable=true]');
+    textEditor.removeEventListener('keydown', this.trackKeyboardNavigation);
+    textEditor.removeEventListener('click', this.onContentChange);
   }
 
   /**
@@ -173,7 +177,7 @@ export default class EmojiPicker extends Component {
     const textEditor = document.querySelector('div[contenteditable=true]');
 
     // handle all insertion and deletion by listening to DOM mutations to text editor div
-    const observer = new MutationObserver((mutationRecords) => {
+    this.observer = new MutationObserver((mutationRecords) => {
       const newInnerText = mutationRecords[mutationRecords.length - 1].target.textContent;
       if (newInnerText !== this.state.innerText) {
         this.onContentChange(true);
@@ -187,32 +191,32 @@ export default class EmojiPicker extends Component {
       characterData: true,
       subtree: true,
     };
-    observer.observe(textEditor, configurations);
+    this.observer.observe(textEditor, configurations);
 
-    textEditor.addEventListener('keydown', (event) => {
-      // handle arrow key navigation
-      const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-      if (arrowKeys.includes(event.key)) {
-        this.onContentChange(false);
-      }
-      // handle emoji picker navigation
-      if (event.key === 'Tab' && this.state.isActive) {
-        event.preventDefault();
-        this.onNavigationWithTab(event.shiftKey);
-      }
-      // handle emoji picker selection
-      if (event.key === 'Enter' && this.state.isActive) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        this.onEmojiSelection();
-      }
-    });
+    textEditor.addEventListener('keydown', this.trackKeyboardNavigation);
 
     // handle click navigation
-    textEditor.addEventListener('click', () => {
+    textEditor.addEventListener('click', this.onContentChange.bind(this, false));
+  }
+
+  trackKeyboardNavigation = (event) => {
+    // handle arrow key navigation
+    const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+    if (arrowKeys.includes(event.key)) {
       this.onContentChange(false);
-    });
+    }
+    // handle emoji picker navigation
+    if (event.key === 'Tab' && this.state.isActive) {
+      event.preventDefault();
+      this.onNavigationWithTab(event.shiftKey);
+    }
+    // handle emoji picker selection
+    if (event.key === 'Enter' && this.state.isActive) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.onEmojiSelection();
+    }
   }
 
   transformEmojiZoneToEmoji = (nodeText, cursor, isAfterClosedEmojiZone) => {
