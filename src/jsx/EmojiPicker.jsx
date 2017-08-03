@@ -105,6 +105,8 @@ export default class EmojiPicker extends Component {
       const cursor = document.getSelection().focusOffset;
       const nodeText = document.getSelection().focusNode.wholeText;
 
+      console.log(nodeText, cursor);
+
       // if cursor is in an emoji zone, make sure emoji picker is activated and update emoji picker UI (e.g ' :smi|')
       if (this.isInEmojiZone(nodeText, cursor)) {
         // change the emoji picker focus to the emoji whose code most closely corresponds to the text of the current emoji zone
@@ -256,7 +258,7 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    document.execCommand('insertText', false, emojiToInsert);
+    document.execCommand('insertText', false, `${emojiToInsert} `);
   }
 
   /**
