@@ -256,7 +256,7 @@ export default class EmojiPicker extends Component {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    document.execCommand('insertText', false, `${emojiToInsert} `);
+    document.execCommand('insertText', false, nodeText[0] !== ':' ? `${emojiToInsert} ` : `${emojiToInsert}`);
   }
 
   /**
