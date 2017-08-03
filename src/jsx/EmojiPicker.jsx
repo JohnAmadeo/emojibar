@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import EmojiList from './EmojiList.jsx';
 import InformationBar from './InformationBar.jsx';
-import { popularEmojis, emojiSearchEngine } from '../emoji.js';
+import { popularEmojis, exactSearchEngine, fuzzySearchEngine } from '../emoji.js';
 import '../less/emoji-picker.less';
 
 export default class EmojiPicker extends Component {
@@ -272,8 +272,11 @@ export default class EmojiPicker extends Component {
       });
     }
     else {
+      const exactMatches = exactSearchEngine.search(emojiZoneText).slice(0, 20);
+      const fuzzyMatches = fuzzySearchEngine.search(emojiZoneText).slice(0, 10);
+
       this.setState({
-        currentEmojis: emojiSearchEngine.search(emojiZoneText).slice(0, 20),
+        currentEmojis: exactMatches.concat(fuzzyMatches.filter(item => !exactMatches.includes(item))),
         currentSelectedEmojiIndex: 0,
         emojiZoneText,
       });
