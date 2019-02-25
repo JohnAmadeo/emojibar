@@ -4,41 +4,35 @@ import ReactDOM from 'react-dom';
 import 'arrive';
 import EmojiPickerContainer from './jsx/EmojiPickerContainer.jsx';
 
-/* Helper functions */
-
-/**
- * Pretty ugly solution, but the styles for these 2 DOM elements can't
- * be styled from the React side
- */
-const emojiPickerStyle = {
-  border: '1px solid red',
-  boxSizing: 'border-box',
-  height: '100%',
-  position: 'absolute',
-  width: '100%',
-};
-
-const messengerStyle = {
-  position: 'relative',
-};
-
-const applyStyle = (node, style) =>
-  Object.keys(style).forEach((property) => { node.style[property] = style[property]; });
-
-/**
- * injects the emoji picker above the textbox in the DOM
- */
 function injectEmojiPicker() {
-  const emojiPicker = document.createElement('div');
-  applyStyle(emojiPicker, emojiPickerStyle);
+  // setTimeout is needed to let the chat window reload; the
+  // chat window loads near-instantaneously since it is not dependent
+  // on/waiting for any data
+  setTimeout(() => {
+    const chat = document.querySelector('div[role="main"]');
+    const chatStyle = {
+      position: 'relative',
+    };
 
-  const messenger = document.querySelector('div[role="main"]');
-  applyStyle(messenger, messengerStyle);
+    Object.keys(chatStyle).forEach(
+      (property) => { chat.style[property] = chatStyle[property]; },
+    );
 
-  messenger.appendChild(emojiPicker);
-  ReactDOM.render(<EmojiPickerContainer />, emojiPicker);
+    const emojiPicker = document.createElement('div');
+    chat.appendChild(emojiPicker);
+    ReactDOM.render(<EmojiPickerContainer />, emojiPicker);
+  }, 0);
 }
 
-/* Main function */
+function setupEmojiPicker() {
+  injectEmojiPicker();
 
-window.addEventListener('load', () => injectEmojiPicker());
+  // When a user clicks on a new conversation the chat window reloads,
+  // which means we have to reattach the emoji picker to the chat window
+  // Since detecting when a user clicks on a new conversation is involved,
+  // we approximate it by detecting clicks on the entire converstation list
+  const convos = document.querySelector('div[role="main"]').previousSibling;
+  convos.addEventListener('click', injectEmojiPicker);
+}
+
+window.addEventListener('load', () => setupEmojiPicker());
