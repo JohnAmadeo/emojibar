@@ -46,7 +46,7 @@ export default class EmojiList extends Component {
               data-name={emoji.name}
               onMouseOver={this.props.onHoverOverEmoji}
             >
-              {emoji.char}
+                {emoji.char}
             </li>
           ))}
         </ul>
