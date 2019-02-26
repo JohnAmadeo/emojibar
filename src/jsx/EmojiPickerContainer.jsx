@@ -1,9 +1,9 @@
 import React from 'react';
+import EmojiPicker from './EmojiPicker';
 
 const appStyle = {
   border: '1px solid #0084ff',
   boxSizing: 'border-box',
-  height: '50px',
   left: '50%',
   position: 'absolute',
   top: '50%',
@@ -14,7 +14,7 @@ const appStyle = {
 export default function EmojiPickerContainer() {
   return (
     <div style={appStyle}>
-      The quick brown fox jumps over the lazy dog
+      <EmojiPicker />
     </div>
   );
 }
