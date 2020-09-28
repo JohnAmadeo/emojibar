@@ -29,5 +29,5 @@ for item in emojilib:
     if item['char'] and item['char'] in messenger_emojis:
         supported_emoji_names.append(item['name'])
 
-with open('src/data/supported_emojis', 'w+', encoding="utf-8") as file:
-    file.write(str(supported_emoji_names))
+with open('src/data/supported_emojis.js', 'w+', encoding="utf-8") as file:
+    file.write("export let supportedemojis = " + str(supported_emoji_names))
