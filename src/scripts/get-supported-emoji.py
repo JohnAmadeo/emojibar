@@ -7,17 +7,21 @@ messenger_emojis = []
 emojilib = []
 supported_emoji_names = []
 
+# Get the content of the whole website that has the list of emojis
 r = requests.get('https://emojipedia.org/facebook/')
 main_page = BeautifulSoup(r.text, 'lxml')
 
+# Take only the list of emoji from the whole page
 emoji_list_nodes = main_page.find('ul', class_='emoji-grid').find_all('li')
 
+# Iterate on each
 for index, node in enumerate(emoji_list_nodes):
     r = requests.get('https://emojipedia.org/' + node.a.attrs['href'])
     emoji_page = BeautifulSoup(r.text, 'lxml')
     messenger_emojis.append(emoji_page.find('input', id='emoji-copy').attrs['value'])
     print(index)
 
+# Write in the messenger_emojis file all the emojis
 with open('src/data/messenger_emojis', 'w+', encoding="utf-8") as file:
     file.write(str(messenger_emojis))
 
@@ -29,5 +33,6 @@ for item in emojilib:
     if item['char'] and item['char'] in messenger_emojis:
         supported_emoji_names.append(item['name'])
 
+# Write in the supported_emojis file all the placeholder text of emojis
 with open('src/data/supported_emojis.js', 'w+', encoding="utf-8") as file:
     file.write("export let supportedemojis = " + str(supported_emoji_names))
