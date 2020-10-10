@@ -43,7 +43,7 @@
     "dependencies": {
         "arrive": "^2.4.1",
         "bluebird": "^3.5.0",
-        "emojilib": "^2.2.7",
+        "emojilib": "^2.4.0",
         "fuse.js": "^3.0.5",
         "react": "^0.14.7",
         "react-dom": "^0.14.7",
