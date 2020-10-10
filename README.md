@@ -13,3 +13,21 @@ Download the Chrome extension at http://bit.ly/emojibar.
 ![](assets/ph/gallery3.jpg)
 
 ![](assets/ph/gallery4.jpg)
+
+# Develoment
+
+## Build the project locally
+
+- Git clone the project locally
+- Run ```npm i``` (Install all libraries the project need)
+- Run ```npx webpack``` (Build the project in the dist folder. You must run this command each time you make changes to see them appear)
+- Tell chrome that your extension is in the dist folder, where the manifest.json file is located
+- Voilà, you're running the extension locally, now you can start working on it
+
+## Update the emoji list
+
+The list of emoji may be outdated over time, it does not update automatically, you have to update it manually, for this you have to
+- Go in ```src/scripts``` folder
+- Run ```get-supported-emoji.py``` script (this script is going to update the files in the ```data``` folder with the new list of emojis)
+- You can check if the new emojis are here by building the extension to test it locally (```npx webpack```)
+- If the new emojis appear, then pull request your commits so the project can be update and the extension can get the new emojis
