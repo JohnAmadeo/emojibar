@@ -26,7 +26,7 @@ export default class EmojiPicker extends Component {
   componentWillUnmount() {
     this.observer.disconnect();
 
-    const textEditor = document.querySelector('div[contenteditable=true][role=combobox]');
+    const textEditor = document.querySelector('div[contenteditable=true]');
     textEditor.removeEventListener('keydown', this.trackKeyboardNavigation);
     textEditor.removeEventListener('click', this.onContentChange);
   }
@@ -162,7 +162,7 @@ export default class EmojiPicker extends Component {
   }
 
   onEmojiSelection = () => {
-    document.querySelector('div[contenteditable=true][role=combobox]').focus();
+    document.querySelector('div[contenteditable=true]').focus();
     this.transformEmojiZoneToEmoji(this.state.nodeText, this.state.cursor, false);
 
     this.setState({
@@ -174,7 +174,7 @@ export default class EmojiPicker extends Component {
    * track text editor and emoji picker
    */
   trackEvents = () => {
-    const textEditor = document.querySelector('div[contenteditable=true][role=combobox]');
+    const textEditor = document.querySelector('div[contenteditable=true]');
 
     // handle all insertion and deletion by listening to DOM mutations to text editor div
     this.observer = new MutationObserver((mutationRecords) => {
