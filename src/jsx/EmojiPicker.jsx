@@ -210,8 +210,9 @@ export default class EmojiPicker extends Component {
       event.preventDefault();
       this.onNavigationWithTab(event.shiftKey);
     }
+
     // handle emoji picker selection
-    if (event.key === 'Enter' && this.state.isActive) {
+    if (event.ctrlKey && event.shiftKey && event.altKey && this.state.isActive) {
       event.preventDefault();
       event.stopPropagation();
 

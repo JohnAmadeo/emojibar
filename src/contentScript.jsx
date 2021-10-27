@@ -15,7 +15,7 @@ function injectEmojiPicker() {
     );
 
     const emojiPicker = document.createElement('div');
-    chat.appendChild(emojiPicker);
+    chat.closest("div[tabindex='-1']").appendChild(emojiPicker);
     ReactDOM.render(<EmojiPickerContainer />, emojiPicker);
 }
 
