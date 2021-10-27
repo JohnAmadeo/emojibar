@@ -5,7 +5,7 @@ import 'arrive';
 import EmojiPickerContainer from './jsx/EmojiPickerContainer.jsx';
 
 function injectEmojiPicker() {
-    const chat = document.querySelector('form');
+    const chat = document.querySelector('div[contenteditable=true]');
     const chatStyle = {
         position: 'relative',
     };
@@ -21,7 +21,7 @@ function injectEmojiPicker() {
 
 // extreme hack since Facebook changed how stuff loads. If your page takes a long time to load, you should probably fix this
 let interval = setInterval(() => {
-    if (document.querySelector('form')) {
+    if (document.querySelector('div[contenteditable=true]')) {
         clearInterval(interval);
         injectEmojiPicker();
     }
