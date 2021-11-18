@@ -14,6 +14,11 @@ Download the Chrome extension at http://bit.ly/emojibar.
 
 ![](assets/ph/gallery4.jpg)
 
+# IMPORTANT
+Since Facebook has done some weird stuff lately, it's unfortunately no longer simply possible to search for an emoji and press enter. Therefore it is now necessary to press CTRL+SHIFT+ALT as an alternative to pressing ENTER on your keyboard, after searching for an emoji.
+
+Before you could do :joy and then press ENTER, but now you have to write :joy followed by CTRL+SHIFT+ALT instead. Very unfortunate.
+
 # Develoment
 
 ## Build the project locally
